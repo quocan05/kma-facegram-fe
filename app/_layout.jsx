@@ -16,6 +16,9 @@ const _layout = () => {
 };
 
 const MainLayout = () => {
+  const user = {
+    uid: 1234,
+  };
   // const { setAuth } = useAuth();
   // useEffect(() => {
   //   supabase.auth.onAuthStateChange((_event, session) => {
@@ -35,10 +38,14 @@ const MainLayout = () => {
   const router = useRouter();
   useEffect(() => {
     console.log("render a2a");
-    router.replace("main/Home");
+    router.replace({ pathname: "main/NewPost", params: { id: user.uid } });
   }, []);
 
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="main/Password" initialParams={{ id: user.uid }} />
+    </Stack>
+  );
 };
 
 export default _layout;

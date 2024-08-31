@@ -41,8 +41,8 @@ export default ButtonCommon;
 const styles = StyleSheet.create({
   button: {
     backgroundColor: themes.colors.gray,
-    height: hp(3.6),
-    width: wp(32),
+    height: hp(4),
+    width: wp(40),
     justifyContent: "center",
     alignItem: "center",
     borderCurve: "continuous",

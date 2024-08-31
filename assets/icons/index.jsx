@@ -23,6 +23,11 @@ import User from "./User";
 import Video from "./Video";
 import Inbox from "./Inbox";
 import Followers from "./Followers";
+import PasswordIcon from "./Password";
+import { Box } from "native-base";
+import Write from "./Write";
+import Attach from "./Attach";
+import FaceFeeling from "./FaceFeeling";
 
 const icons = {
   home: Home,
@@ -48,18 +53,29 @@ const icons = {
   video: Video,
   inbox: Inbox,
   followers: Followers,
+  passwordSecurity: PasswordIcon,
+  write: Write,
+  attach: Attach,
+  feeling: FaceFeeling,
 };
 
-const Icon = ({ name, ...props }) => {
+const Icon = ({ name, ml = 0, ...props }) => {
   const IconComponent = icons[name];
   return (
-    <IconComponent
-      height={props.size || 24}
-      width={props.size || 24}
-      strokeWidth={props.strokeWidth || 1.9}
-      color={themes.colors.textLight}
-      {...props}
-    />
+    <Box
+      style={{
+        // marginHorizontal: marginHorizontal,
+        marginLeft: ml,
+      }}
+    >
+      <IconComponent
+        height={props.size || 24}
+        width={props.size || 24}
+        strokeWidth={props.strokeWidth || 1.9}
+        color={themes.colors.textLight}
+        {...props}
+      />
+    </Box>
   );
 };
 

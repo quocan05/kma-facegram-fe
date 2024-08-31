@@ -20,7 +20,12 @@ import ButtonCommon from "../../components/button/CommonButton";
 import Divider from "../../components/displays/Divider";
 
 const Profile = () => {
-  const { user, setAuth } = useAuth();
+  // const { user, setAuth } = useAuth();
+  const user = {
+    name: "Neymar Jr",
+    username: "enejota",
+    email: "ney@yopmail.com",
+  };
   const router = useRouter();
   const onLogout = async () => {
     // setAuth(null);
@@ -64,8 +69,8 @@ const UserHeader = ({ user, router, logOut }) => {
         <View>
           <View style={styles.wrapperHeadProfile}>
             <View style={styles.infoUser}>
-              <Text style={styles.userName}>abcscsd</Text>
-              <Text>@username</Text>
+              <Text style={styles.userName}>{user.name}</Text>
+              <Text>{`@${user.username}`}</Text>
               <View>
                 <Text>
                   this is bio Lorem ipsum dolor sit, amet consectetur
@@ -93,10 +98,7 @@ const UserHeader = ({ user, router, logOut }) => {
           </View>
 
           <View style={[styles.buttonGroup, { marginTop: 10 }]}>
-            <ButtonCommon
-              onPress={() => console.log("click")}
-              title="Edit profile"
-            />
+            <ButtonCommon onPress={() => console.log("click")} title="Follow" />
             <ButtonCommon
               onPress={() => console.log("click 2")}
               title="Edit profile"
