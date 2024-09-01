@@ -59,7 +59,7 @@ const icons = {
   feeling: FaceFeeling,
 };
 
-const Icon = ({ name, ml = 0, ...props }) => {
+const Icon = ({ name, color = themes.colors.textLight, ml = 0, ...props }) => {
   const IconComponent = icons[name];
   return (
     <Box
@@ -72,7 +72,7 @@ const Icon = ({ name, ml = 0, ...props }) => {
         height={props.size || 24}
         width={props.size || 24}
         strokeWidth={props.strokeWidth || 1.9}
-        color={themes.colors.textLight}
+        color={color}
         {...props}
       />
     </Box>
