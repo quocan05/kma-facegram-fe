@@ -1,3 +1,5 @@
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
   Pressable,
@@ -6,39 +8,27 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import React from "react";
-import ScreenWrapper from "../../components/screen/ScreenWrapper";
-import { useRouter } from "expo-router";
-import { useAuth } from "../../contexts/AuthContext";
-import Header from "../../components/header/Header";
 import Icon from "../../assets/icons";
-import { themes } from "../../constants/theme";
-import { hp, wp } from "../../helpers/common";
-import { supabase } from "../../lib/supabase";
 import Avatar from "../../components/avatar/Avatar";
 import ButtonCommon from "../../components/button/CommonButton";
 import Divider from "../../components/displays/Divider";
+import Header from "../../components/header/Header";
+import { themes } from "../../constants/theme";
+import { useAuth } from "../../contexts/AuthContext";
+import { hp, wp } from "../../helpers/common";
+import { getMe } from "../../services/AuthUser";
+import { getUser } from "../../services/UserService";
 
 const Profile = () => {
-  // const { user, setAuth } = useAuth();
-  const user = {
-    name: "Neymar Jr",
-    username: "enejota",
-    email: "ney@yopmail.com",
-  };
+  const { auth } = useLocalSearchParams();
+  const { authUser, logout } = useAuth();
+
+  const [currentUser, setCurrentUser] = useState({});
+
+  const isMe = auth === "me";
+
   const router = useRouter();
-  const onLogout = async () => {
-    // setAuth(null);
-    try {
-      const { error } = await supabase.auth.signOut();
-      console.log("lougout");
-      if (error) {
-        Alert.alert("Sign Out", "Sign Out error!");
-      }
-    } catch (error) {}
-  };
   const handleLogout = async () => {
-    // console.log("logout");
     Alert.alert("Sign out", "Are your sure want to log out?", [
       {
         text: "Cancel",
@@ -47,18 +37,45 @@ const Profile = () => {
       },
       {
         text: "Logout",
-        onPress: () => onLogout(),
+        onPress: async () => await logout(),
       },
     ]);
   };
+
+  const fetchAuthUser = async () => {
+    try {
+      const data = await getMe();
+      setCurrentUser(data.user);
+    } catch (error) {}
+  };
+
+  const fetchNormalUser = async () => {
+    try {
+      const data = await getUser("66d6e378d0bda1311f6c320c");
+      setCurrentUser(data.user);
+    } catch (error) {}
+  };
+
+  useEffect(() => {
+    if (isMe) {
+      fetchAuthUser();
+    } else {
+      fetchNormalUser();
+    }
+  }, []);
+
+  useEffect(() => {
+    console.log("user get>>>", currentUser);
+  }, [currentUser]);
+
   return (
-    <ScreenWrapper>
-      <UserHeader user={user} router={router} logOut={handleLogout} />
-    </ScreenWrapper>
+    <>
+      <UserHeader user={currentUser} router={router} logOut={handleLogout} />
+    </>
   );
 };
 
-const UserHeader = ({ user, router, logOut }) => {
+const UserHeader = ({ user, logOut, router }) => {
   return (
     <View style={{ flex: 1 }}>
       <Header title={"Profile"} mb={20} />
@@ -69,13 +86,10 @@ const UserHeader = ({ user, router, logOut }) => {
         <View>
           <View style={styles.wrapperHeadProfile}>
             <View style={styles.infoUser}>
-              <Text style={styles.userName}>{user.name}</Text>
-              <Text>{`@${user.username}`}</Text>
+              <Text style={styles.userName}>{user.displayName}</Text>
+              <Text>{`@${user.userName}`}</Text>
               <View>
-                <Text>
-                  this is bio Lorem ipsum dolor sit, amet consectetur
-                  adipisicing elit. Iure reprehenderit dolorem atque,
-                </Text>
+                <Text>{user.bio}</Text>
                 <Pressable onPress={() => console.log("click see followers")}>
                   <View style={styles.followers}>
                     <Icon size={20} name={"followers"} />
@@ -87,7 +101,7 @@ const UserHeader = ({ user, router, logOut }) => {
               </View>
             </View>
             <View style={styles.avatarContainer}>
-              <Avatar uri={""} size={hp(10)} rounded={50} />
+              <Avatar uri={user.avatar ?? ""} size={hp(10)} rounded={50} />
               <Pressable
                 style={styles.editIcon}
                 onPress={() => router.push("main/EditProfile")}

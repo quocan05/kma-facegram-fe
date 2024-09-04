@@ -6,6 +6,7 @@ import { hp, wp } from "../helpers/common";
 import { themes } from "../constants/theme";
 import Button from "../components/button/Button";
 import { router } from "expo-router";
+import { getToken } from "../services/storage";
 const Welcome = () => {
   return (
     <ScreenWrapper bg={"white"}>

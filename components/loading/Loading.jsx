@@ -3,7 +3,6 @@ import React from "react";
 import { themes } from "../../constants/theme";
 
 const Loading = ({ size = "large", color = themes.colors.primary, type }) => {
-  console.log("loading");
   return (
     <View style={{ justifyContent: "center", alignItems: "center" }}>
       <ActivityIndicator

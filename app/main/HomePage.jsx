@@ -1,25 +1,25 @@
-import { Alert, Button, Pressable, StyleSheet, Text, View } from "react-native";
 import React, { useEffect } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import ScreenWrapper from "../../components/screen/ScreenWrapper";
-import { useAuth } from "../../contexts/AuthContext";
-import { supabase } from "../../lib/supabase";
-import { hp, wp } from "../../helpers/common";
-import { themes } from "../../constants/theme";
-import Icon from "../../assets/icons";
-import { useRouter } from "expo-router";
-import Avatar from "../../components/avatar/Avatar";
 
-const Home = () => {
-  // const { user, setAuth } = useAuth();
-  const user = {};
+import { useRouter } from "expo-router";
+import Icon from "../../assets/icons";
+import Avatar from "../../components/avatar/Avatar";
+import { themes } from "../../constants/theme";
+import { hp, wp } from "../../helpers/common";
+import { getToken } from "../../services/storage";
+import { useAuth } from "../../contexts/AuthContext";
+
+const HomePage = () => {
+  const { authUser } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    console.log("home");
-  });
+    console.log("authen user>>>", authUser);
+  }, [authUser]);
 
   return (
-    <ScreenWrapper>
+    <>
       <View style={styles.container}>
         {/* header */}
         <View style={styles.header}>
@@ -41,9 +41,18 @@ const Home = () => {
                 color={themes.colors.text}
               />
             </Pressable>
-            <Pressable onPress={() => router.push("main/Profile")}>
+            <Pressable
+              onPress={() =>
+                router.push({
+                  pathname: "main/Profile",
+                  params: {
+                    auth: "me",
+                  },
+                })
+              }
+            >
               <Avatar
-                uri={user?.image}
+                uri={""}
                 size={hp(4.3)}
                 rounded={themes.radius.sm}
                 style={{ borderWidth: 2 }}
@@ -58,13 +67,16 @@ const Home = () => {
               />
             </Pressable>
           </View>
+          <Pressable onPress={() => console.log(authUser)}>
+            <Text>Click</Text>
+          </Pressable>
         </View>
       </View>
-    </ScreenWrapper>
+    </>
   );
 };
 
-export default Home;
+export default HomePage;
 
 const styles = StyleSheet.create({
   container: {

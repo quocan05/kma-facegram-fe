@@ -52,7 +52,7 @@ const NewPost = () => {
     </Box>
   );
   return (
-    <ScreenWrapper>
+    <>
       <Header title={"Create a post"} />
       <Flex direction="column" justifyContent={"space-between"} h={"80%"}>
         <Flex direction="row" marginX={4}>
@@ -97,7 +97,7 @@ const NewPost = () => {
           </Box>
         </Flex>
       </Flex>
-    </ScreenWrapper>
+    </>
   );
 };
 

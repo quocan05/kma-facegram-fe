@@ -29,11 +29,8 @@ const Password = () => {
     console.log(values);
   };
 
-  useEffect(() => {
-    console.log("uid:", id);
-  });
   return (
-    <ScreenWrapper>
+    <>
       <Header title={"Change Password"} />
       <Center>
         <Formik
@@ -112,7 +109,7 @@ const Password = () => {
           )}
         </Formik>
       </Center>
-    </ScreenWrapper>
+    </>
   );
 };
 

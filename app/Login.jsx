@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Alert, Pressable, StyleSheet, Text, View } from "react-native";
 import BackButton from "../components/button/BackButton";
 import ScreenWrapper from "../components/screen/ScreenWrapper";
@@ -9,36 +9,48 @@ import { hp, wp } from "../helpers/common";
 import Input from "../components/input/Input";
 import Icon from "../assets/icons";
 import Button from "../components/button/Button";
-import { supabase } from "../lib/supabase";
+import { authLogin } from "../services/AuthUser";
+import { getToken, setToken } from "../services/storage";
+import { useAuth } from "../contexts/AuthContext";
 
 const Login = () => {
   const router = useRouter();
-  const emailRef = useRef("");
+  const userNameRef = useRef("");
   const passwordRef = useRef("");
   const [loading, setLoading] = useState(false);
 
+  const { authUser, setAuth } = useAuth();
+
   const onSubmit = async () => {
-    if (!emailRef.current || !passwordRef.current) {
+    if (!userNameRef.current || !passwordRef.current) {
       Alert.alert("Login", "Please enter the fields!");
       return;
     }
-
-    let password = passwordRef.current.trim();
-    let email = emailRef.current.trim();
-    setLoading(true);
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-    setLoading(false);
-    console.log("error", error);
-
-    if (error) {
-      Alert.alert("Error", error.message);
+    try {
+      let password = passwordRef.current.trim();
+      let userName = userNameRef.current.trim();
+      setLoading(true);
+      const data = await authLogin({ userName, password });
+      if (data) {
+        await setToken("authToken", data.user.token);
+        await setAuth();
+      }
+    } catch (error) {
+      console.log("err>>>", error);
+    } finally {
+      router.replace("main/HomePage");
+      setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (authUser) {
+      router.replace("main/HomePage");
+    }
+  }, [authUser]);
+
   return (
-    <ScreenWrapper>
+    <>
       <StatusBar style="dark" />
       <View style={styles.container}>
         <BackButton router={router} />
@@ -51,10 +63,10 @@ const Login = () => {
             Login to continue
           </Text>
           <Input
-            placeholder={"Enter email"}
+            placeholder={"Enter email, user name, or phone to continue"}
             icon={<Icon name={"mail"} size={26} strokeWidth={1.6} />}
             onChangeText={(value) => {
-              emailRef.current = value;
+              userNameRef.current = value;
             }}
           />
           <Input
@@ -87,7 +99,7 @@ const Login = () => {
           </View>
         </View>
       </View>
-    </ScreenWrapper>
+    </>
   );
 };
 

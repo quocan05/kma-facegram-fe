@@ -5,13 +5,8 @@ import { View } from "react-native";
 
 const index = () => {
   const router = useRouter();
-  console.log("render index");
-  return (
-    // <ScreenWrapper>
-    //   <Text>helsslo</Text>
-    //   <Button title="welcome" onPress={() => router.push("Welcome")} />
-    // </ScreenWrapper>
 
+  return (
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
       <Loading />
     </View>
