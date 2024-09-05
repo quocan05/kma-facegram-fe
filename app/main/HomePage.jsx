@@ -9,6 +9,8 @@ import { themes } from "../../constants/theme";
 import { hp, wp } from "../../helpers/common";
 import { getToken } from "../../services/storage";
 import { useAuth } from "../../contexts/AuthContext";
+import Post from "../../components/post/Post";
+import { ScrollView } from "native-base";
 
 const HomePage = () => {
   const { authUser } = useAuth();
@@ -23,7 +25,7 @@ const HomePage = () => {
       <View style={styles.container}>
         {/* header */}
         <View style={styles.header}>
-          <Text style={styles.title}>FaceGram</Text>
+          <Text style={styles.title}>FG</Text>
           <View style={styles.icons}>
             <Pressable onPress={() => router.push("main/Notifications")}>
               <Icon
@@ -67,10 +69,13 @@ const HomePage = () => {
               />
             </Pressable>
           </View>
-          <Pressable onPress={() => console.log(authUser)}>
-            <Text>Click</Text>
-          </Pressable>
         </View>
+        <ScrollView>
+          <Post post={authUser} />
+          <Post post={authUser} />
+          <Post post={authUser} />
+          <Post post={authUser} />
+        </ScrollView>
       </View>
     </>
   );

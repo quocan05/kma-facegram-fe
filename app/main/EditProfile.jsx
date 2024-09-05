@@ -10,8 +10,8 @@ import {
   Center,
   Box,
   TextArea,
+  useToast,
 } from "native-base";
-import ScreenWrapper from "../../components/screen/ScreenWrapper";
 import Header from "../../components/header/Header";
 import { Pressable, StyleSheet, TouchableOpacity, View } from "react-native";
 import Avatar from "../../components/avatar/Avatar";
@@ -20,42 +20,40 @@ import Icon from "../../assets/icons";
 import { themes } from "../../constants/theme";
 import { useRouter } from "expo-router";
 import { getMe } from "../../services/AuthUser";
+import { editUser } from "../../services/UserService";
 
 // Define the validation schema using Yup
 const validationSchema = Yup.object({
-  userName: Yup.string().required("userName is required"),
-  name: Yup.string().required("Name is required"),
+  firstName: Yup.string().required("First name is required"),
+  lastName: Yup.string().required("Last name is required"),
   email: Yup.string()
     .email("Invalid email format")
     .required("Email is required"),
   //   image: Yup.mixed().required("Image is required"),
 });
-
-// Define the initial values for the form
-
-// Handle form submission
-const onSubmit = (values) => {
-  // Handle form submission, e.g., send data to server
-  console.log(values);
+const onSubmit = async (values) => {
+  try {
+    console.log("process");
+    await editUser(values);
+  } catch (error) {}
 };
 
 const EditProfileForm = () => {
   const [userEdit, setUserEdit] = useState({});
   const router = useRouter();
+
   const fetchDetailUser = async () => {
-    const data = await getMe();
-    setUserEdit(data.user);
+    try {
+      const data = await getMe();
+      setUserEdit(data.user);
+    } catch (error) {}
   };
 
   useEffect(() => {
     fetchDetailUser();
   }, []);
-
-  useEffect(() => {
-    console.log('me"">>>>', userEdit);
-  }, [userEdit]);
   return (
-    <ScreenWrapper>
+    <>
       <Box>
         <Header title={"Edit Profile"} />
         <TouchableOpacity
@@ -69,7 +67,8 @@ const EditProfileForm = () => {
         <Formik
           initialValues={{
             userName: userEdit.userName || "",
-            displayName: userEdit.displayName || "",
+            firstName: userEdit.firstName || "",
+            lastName: userEdit.lastName || "",
             phone: userEdit.phone || "",
             email: userEdit.email || "",
             avatar: userEdit.avatar || null,
@@ -90,7 +89,8 @@ const EditProfileForm = () => {
             useEffect(() => {
               if (userEdit) {
                 setFieldValue("userName", userEdit.userName);
-                setFieldValue("displayName", userEdit.displayName);
+                setFieldValue("firstName", userEdit.firstName);
+                setFieldValue("lastName", userEdit.lastName);
                 setFieldValue("email", userEdit.email);
                 setFieldValue("phone", userEdit.phone || "");
                 setFieldValue("bio", userEdit.bio || "");
@@ -98,7 +98,7 @@ const EditProfileForm = () => {
               }
             }, [userEdit]);
             return (
-              <VStack width="80%" space={4}>
+              <VStack width="90%" space={4}>
                 <FormControl isInvalid={touched.image && errors.image}>
                   <Center>
                     <View style={styles.avatarContainer}>
@@ -111,55 +111,42 @@ const EditProfileForm = () => {
                       </Pressable>
                     </View>
                   </Center>
-                  {/* <Input
-                      name="image"
-                      placeholder="Upload image"
-                      onBlur={handleBlur("image")}
-                      onChange={(event) => {
-                        // Handle file upload
-                        const file = event.target.files[0];
-                        setFieldValue("image", file);
-                      }}
-                      type="file"
-                    /> */}
                   <FormControl.ErrorMessage>
                     {errors.image}
                   </FormControl.ErrorMessage>
                 </FormControl>
-                <FormControl isInvalid={touched.userName && errors.userName}>
-                  <FormControl.Label>userName</FormControl.Label>
+
+                <FormControl isInvalid={touched.firstName && errors.firstName}>
+                  <FormControl.Label>First Name</FormControl.Label>
                   <Input
                     size={"lg"}
-                    name="userName"
-                    placeholder="userName"
-                    onBlur={handleBlur("userName")}
-                    onChangeText={handleChange("userName")}
-                    value={values.userName}
+                    name="firstName"
+                    placeholder="First Name"
+                    onBlur={handleBlur("firstName")}
+                    onChangeText={handleChange("firstName")}
+                    value={values.firstName}
                   />
                   <FormControl.ErrorMessage>
-                    {errors.userName}
+                    {errors.firstName}
                   </FormControl.ErrorMessage>
                 </FormControl>
-
-                <FormControl
-                  isInvalid={touched.displayName && errors.displayName}
-                >
-                  <FormControl.Label>Display Name</FormControl.Label>
+                <FormControl isInvalid={touched.lastName && errors.lastName}>
+                  <FormControl.Label>Last Name</FormControl.Label>
                   <Input
                     size={"lg"}
-                    name="displayName"
-                    placeholder="Display Name"
-                    onBlur={handleBlur("displayName")}
-                    onChangeText={handleChange("displayName")}
-                    value={values.displayName}
+                    name="lastName"
+                    placeholder="Last Name"
+                    onBlur={handleBlur("lastName")}
+                    onChangeText={handleChange("lastName")}
+                    value={values.lastName}
                   />
                   <FormControl.ErrorMessage>
-                    {errors.displayName}
+                    {errors.lastName}
                   </FormControl.ErrorMessage>
                 </FormControl>
 
                 <FormControl isInvalid={touched.email && errors.email}>
-                  <FormControl.Label>Email</FormControl.Label>
+                  <FormControl.Label>Email(readonly)</FormControl.Label>
                   <Input
                     size={"lg"}
                     name="email"
@@ -174,11 +161,11 @@ const EditProfileForm = () => {
                   </FormControl.ErrorMessage>
                 </FormControl>
                 <FormControl isInvalid={touched.phone && errors.phone}>
-                  <FormControl.Label>Email</FormControl.Label>
+                  <FormControl.Label>Phone(readonly)</FormControl.Label>
                   <Input
                     size={"lg"}
                     name="phone"
-                    placeholder="Email"
+                    placeholder="Phone"
                     keyboardType="name-phone-pad"
                     onBlur={handleBlur("phone")}
                     onChangeText={handleChange("phone")}
@@ -202,7 +189,6 @@ const EditProfileForm = () => {
                     {errors.bio}
                   </FormControl.ErrorMessage>
                 </FormControl>
-
                 <Button size={"lg"} onPress={handleSubmit} colorScheme="green">
                   Update
                 </Button>
@@ -211,7 +197,7 @@ const EditProfileForm = () => {
           }}
         </Formik>
       </Center>
-    </ScreenWrapper>
+    </>
   );
 };
 

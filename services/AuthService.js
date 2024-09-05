@@ -2,6 +2,10 @@ import axios from "axios";
 import { baseConfig } from "../configs/baseConfig";
 import { getToken } from "./storage";
 import { TOKEN } from "../constants/variables";
+import { useRouter } from "expo-router";
+import { handleUnauthorized } from "../helpers/auth";
+import { showToast } from "../helpers/toast";
+import { useAuth } from "../contexts/AuthContext";
 
 // Tạo instance của axios
 const axiosInstance = axios.create({
@@ -13,7 +17,7 @@ axiosInstance.interceptors.request.use(
   async (config) => {
     try {
       console.log(baseConfig);
-      const token = await getToken(TOKEN.AUTH_TOKEN);
+      const token = await getToken("authToken");
       if (token) {
         console.log("token:", token);
         config.headers.Authorization = `Bearer ${token}`;
@@ -38,10 +42,13 @@ axiosInstance.interceptors.response.use(
   (error) => {
     // Xử lý lỗi
     if (error.response) {
-      console.error("Error in response interceptor:", error.response.data);
+      console.error(error.response.data.msg);
       if (error.response.status === 401) {
         console.error("Unauthorized, redirecting to login...");
-        // Có thể thêm logic để chuyển hướng người dùng đến màn hình đăng nhập
+      }
+      if (error.response.status === 400) {
+        console.log(error.response.data.msg);
+        return;
       }
     }
     return Promise.reject(error);

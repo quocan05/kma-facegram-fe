@@ -24,7 +24,7 @@ import Video from "./Video";
 import Inbox from "./Inbox";
 import Followers from "./Followers";
 import PasswordIcon from "./Password";
-import { Box } from "native-base";
+import { Box, Text } from "native-base";
 import Write from "./Write";
 import Attach from "./Attach";
 import FaceFeeling from "./FaceFeeling";
@@ -59,13 +59,21 @@ const icons = {
   feeling: FaceFeeling,
 };
 
-const Icon = ({ name, color = themes.colors.textLight, ml = 0, ...props }) => {
+const Icon = ({
+  name,
+  color = themes.colors.textLight,
+  ml = 0,
+  extra,
+  ...props
+}) => {
   const IconComponent = icons[name];
   return (
     <Box
       style={{
-        // marginHorizontal: marginHorizontal,
         marginLeft: ml,
+        display: "flex",
+        flexDirection: "row",
+        gap: 2,
       }}
     >
       <IconComponent
@@ -75,6 +83,7 @@ const Icon = ({ name, color = themes.colors.textLight, ml = 0, ...props }) => {
         color={color}
         {...props}
       />
+      <Text>{extra}</Text>
     </Box>
   );
 };

@@ -17,14 +17,7 @@ const _layout = () => {
 };
 
 const MainLayout = () => {
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="SignUp" />
-      <Stack.Screen name="Login" />
-      <Stack.Screen name="main/HomePage" options={{ gestureEnabled: false }} />
-      <Stack.Screen name="Welcome" options={{ gestureEnabled: false }} />
-    </Stack>
-  );
+  return <Stack screenOptions={{ headerShown: false }} />;
 };
 
 export default _layout;

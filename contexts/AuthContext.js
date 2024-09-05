@@ -20,8 +20,7 @@ export const AuthProvider = ({ children }) => {
       try {
         const token = await getToken("authToken");
         if (token) {
-          setAuthUser({ token }); // Assuming token means authenticated user
-          getAuthenticatedUser();
+          await getAuthenticatedUser();
           if (authUser) {
             router.replace("main/HomePage"); // Redirect to home if authenticated
           }
@@ -50,7 +49,6 @@ export const AuthProvider = ({ children }) => {
     console.log("remove");
     await removeToken("authToken");
     setAuthUser(null);
-    router.replace("Welcome");
   };
 
   return (

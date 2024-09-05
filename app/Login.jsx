@@ -31,14 +31,14 @@ const Login = () => {
       let userName = userNameRef.current.trim();
       setLoading(true);
       const data = await authLogin({ userName, password });
-      if (data) {
+      if (data.user) {
         await setToken("authToken", data.user.token);
         await setAuth();
+        console.log("data get >>>", data);
       }
     } catch (error) {
-      console.log("err>>>", error);
+      console.log("err>>>", error.response);
     } finally {
-      router.replace("main/HomePage");
       setLoading(false);
     }
   };

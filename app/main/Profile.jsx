@@ -1,18 +1,18 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { ScrollView, Text } from "native-base";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   Pressable,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
 } from "react-native";
 import Icon from "../../assets/icons";
 import Avatar from "../../components/avatar/Avatar";
 import ButtonCommon from "../../components/button/CommonButton";
-import Divider from "../../components/displays/Divider";
 import Header from "../../components/header/Header";
+import Post from "../../components/post/Post";
 import { themes } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { hp, wp } from "../../helpers/common";
@@ -64,21 +64,35 @@ const Profile = () => {
     }
   }, []);
 
-  useEffect(() => {
-    console.log("user get>>>", currentUser);
-  }, [currentUser]);
+  useFocusEffect(
+    useCallback(() => {
+      if (isMe) {
+        fetchAuthUser();
+      } else {
+        fetchNormalUser();
+      }
+    }, [])
+  );
 
   return (
-    <>
+    <ScrollView>
       <UserHeader user={currentUser} router={router} logOut={handleLogout} />
-    </>
+      <Post post={currentUser} />
+      <Post post={currentUser} />
+      <Post post={currentUser} />
+      <Post post={currentUser} />
+      <Post post={currentUser} />
+      <Post post={currentUser} />
+      <Post post={currentUser} />
+      <Post post={currentUser} />
+    </ScrollView>
   );
 };
 
 const UserHeader = ({ user, logOut, router }) => {
   return (
     <View style={{ flex: 1 }}>
-      <Header title={"Profile"} mb={20} />
+      <Header title={"Profile"} />
       <TouchableOpacity style={styles.logoutButton} onPress={logOut}>
         <Icon name={"logout"} color={themes.colors.rose} />
       </TouchableOpacity>
@@ -86,7 +100,9 @@ const UserHeader = ({ user, logOut, router }) => {
         <View>
           <View style={styles.wrapperHeadProfile}>
             <View style={styles.infoUser}>
-              <Text style={styles.userName}>{user.displayName}</Text>
+              <Text style={styles.userName} bold fontSize={"2xl"}>
+                {user.displayName}
+              </Text>
               <Text>{`@${user.userName}`}</Text>
               <View>
                 <Text>{user.bio}</Text>
@@ -101,7 +117,11 @@ const UserHeader = ({ user, logOut, router }) => {
               </View>
             </View>
             <View style={styles.avatarContainer}>
-              <Avatar uri={user.avatar ?? ""} size={hp(10)} rounded={50} />
+              <Avatar
+                uri={user.avatar ? user.avatar : ""}
+                size={hp(10)}
+                rounded={50}
+              />
               <Pressable
                 style={styles.editIcon}
                 onPress={() => router.push("main/EditProfile")}
@@ -118,10 +138,12 @@ const UserHeader = ({ user, logOut, router }) => {
               title="Edit profile"
             />
           </View>
-          <View style={{ marginTop: 10 }}>
-            <Divider />
-          </View>
         </View>
+      </View>
+      <View style={{ marginTop: 10, paddingHorizontal: 20 }}>
+        <Text bold fontSize={"xl"}>
+          Posts
+        </Text>
       </View>
     </View>
   );
@@ -133,6 +155,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     paddingHorizontal: 20,
+    marginTop: 20,
   },
   headerContainer: {
     marginBottom: 20,
@@ -180,8 +203,7 @@ const styles = StyleSheet.create({
     elevation: 7,
   },
   userName: {
-    fontSize: hp(3),
-    fontWeight: "500",
+    fontWeight: "700",
     color: themes.colors.textDark,
   },
   info: {
