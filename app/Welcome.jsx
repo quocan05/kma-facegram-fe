@@ -1,11 +1,12 @@
 import { Image, Pressable, StyleSheet, Text, View } from "react-native";
-import React from "react";
+import React, { useEffect } from "react";
 import ScreenWrapper from "../components/screen/ScreenWrapper";
 import { StatusBar } from "expo-status-bar";
 import { hp, wp } from "../helpers/common";
 import { themes } from "../constants/theme";
 import Button from "../components/button/Button";
 import { router } from "expo-router";
+import { getToken, removeToken } from "../services/storage";
 const Welcome = () => {
   return (
     <ScreenWrapper bg={"white"}>
@@ -32,7 +33,11 @@ const Welcome = () => {
           />
           <View style={styles.bottomText}>
             <Text style={[styles.loginText]}>Already have account ?</Text>
-            <Pressable onPress={() => router.push("Login")}>
+            <Pressable
+              onPress={() => {
+                router.push("Login");
+              }}
+            >
               <Text
                 style={[
                   styles.loginText,

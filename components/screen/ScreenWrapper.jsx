@@ -1,7 +1,7 @@
 import { View, Text } from "react-native";
 import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { NativeBaseProvider } from "native-base";
+import { KeyboardAvoidingView, NativeBaseProvider } from "native-base";
 
 const ScreenWrapper = ({ children, bg }) => {
   const { top } = useSafeAreaInsets();

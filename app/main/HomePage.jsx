@@ -1,24 +1,48 @@
-import React, { useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import ScreenWrapper from "../../components/screen/ScreenWrapper";
 
-import { useRouter } from "expo-router";
+import { useFocusEffect, useRouter } from "expo-router";
+import { FlatList, Modal, ScrollView } from "native-base";
 import Icon from "../../assets/icons";
 import Avatar from "../../components/avatar/Avatar";
-import { themes } from "../../constants/theme";
-import { hp, wp } from "../../helpers/common";
-import { getToken } from "../../services/storage";
-import { useAuth } from "../../contexts/AuthContext";
 import Post from "../../components/post/Post";
-import { ScrollView } from "native-base";
+import { themes } from "../../constants/theme";
+import { useAuth } from "../../contexts/AuthContext";
+import { hp, wp } from "../../helpers/common";
+import { getAllPost } from "../../services/PostService";
+import DetailPost from "./DetailPost";
 
 const HomePage = () => {
-  const { authUser } = useAuth();
+  const { authUser, logout } = useAuth();
   const router = useRouter();
+  const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  const getSuggestPosts = async () => {
+    const data = await getAllPost();
+    if (data) {
+      const sortedPosts = data.posts.sort(
+        (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+      );
+
+      setPosts(sortedPosts);
+    }
+  };
 
   useEffect(() => {
-    console.log("authen user>>>", authUser);
+    if (authUser) {
+      console.log("auht user>>", authUser);
+      getSuggestPosts();
+    } else {
+      logout();
+    }
   }, [authUser]);
+
+  useFocusEffect(
+    useCallback(() => {
+      getSuggestPosts();
+    }, [])
+  );
 
   return (
     <>
@@ -70,11 +94,22 @@ const HomePage = () => {
             </Pressable>
           </View>
         </View>
+        {/* <FlatList data={posts} renderItem={(p) => <Post post={p} />} /> */}
         <ScrollView>
-          <Post post={authUser} />
-          <Post post={authUser} />
-          <Post post={authUser} />
-          <Post post={authUser} />
+          {posts &&
+            posts.map((p) => (
+              <Pressable
+                key={p._id}
+                onPress={() =>
+                  router.push({
+                    pathname: "main/DetailPost",
+                    params: { postId: p._id },
+                  })
+                }
+              >
+                <Post key={p._id} post={p} />
+              </Pressable>
+            ))}
         </ScrollView>
       </View>
     </>

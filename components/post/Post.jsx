@@ -1,13 +1,37 @@
 import { Pressable, StyleSheet, View } from "react-native";
-import React from "react";
-import { Box, Divider, Flex, HStack, Text, VStack } from "native-base";
+import React, { useEffect } from "react";
+import {
+  Box,
+  Divider,
+  Flex,
+  HStack,
+  Text,
+  useToast,
+  VStack,
+} from "native-base";
 import Avatar from "../avatar/Avatar";
 import { hp, wp } from "../../helpers/common";
 import { themes } from "../../constants/theme";
 import { Image } from "expo-image";
 import Icon from "../../assets/icons";
+import { likePost } from "../../services/PostService";
 
 const Post = ({ post }) => {
+  const { _id, author, content, image, comments, reacts } = post;
+  const toast = useToast();
+  const handleLikePost = async () => {
+    const data = await likePost({
+      postId: _id,
+      type: "like",
+    });
+    if (data) {
+      toast.show({
+        placement: "bottom",
+        description: `Liked ${_id}`,
+      });
+    }
+  };
+
   return (
     <Box style={styles.postContainer}>
       <Divider />
@@ -16,22 +40,14 @@ const Post = ({ post }) => {
         <VStack space={2} w={320}>
           <Flex justifyContent={"space-between"} direction="row" align="center">
             <Text bold fontSize={"lg"}>
-              {post.userName}
+              {author.displayName}
             </Text>
             <Pressable>
               <Icon name={"threeDotsHorizontal"} />
             </Pressable>
           </Flex>
           <Box>
-            <Text fontSize={"md"}>
-              Por primera vez desde 2003, tanto Lionel Messi como Cristiano
-              Ronaldo 𝗡𝗢 están en la lista de nominados al Balón de Oro. Fueron
-              dos décadas con presencia compartida o con al menos uno entre los
-              candidatos. Fue hermoso y mágico mientras duró. El fin de una era
-              inigualable. Gracias por regalarnos la rivalidad deportiva más
-              épica de todos los tiempos. Simplemente los más grandes de la
-              historia. Los amos y señores del fútbol mundial. 𝗟𝗢𝗦 𝗚𝗢𝗔𝗧𝗦.
-            </Text>
+            <Text fontSize={"md"}>{content}</Text>
             <Image
               style={styles.postImage}
               source={
@@ -41,8 +57,8 @@ const Post = ({ post }) => {
           </Box>
           <Box>
             <HStack space={4}>
-              <Pressable>
-                <Icon name={"heart"} extra={12} />
+              <Pressable onPress={() => handleLikePost()}>
+                <Icon name={"heart"} extra={reacts.length} />
               </Pressable>
               <Pressable>
                 <Icon name={"comment"} extra={9} />

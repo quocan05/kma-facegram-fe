@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import ScreenWrapper from "../../components/screen/ScreenWrapper";
 import Header from "../../components/header/Header";
 import {
@@ -9,10 +9,13 @@ import {
   Divider,
   FlatList,
   Flex,
+  HStack,
   Input,
+  Radio,
   Spacer,
   TextArea,
   theme,
+  useToast,
 } from "native-base";
 import Avatar from "../../components/avatar/Avatar";
 import { hp, wp } from "../../helpers/common";
@@ -20,9 +23,18 @@ import Icon from "../../assets/icons";
 import * as ImagePicker from "expo-image-picker";
 import { Image } from "expo-image";
 import { themes } from "../../constants/theme";
+import { createNewPost } from "../../services/PostService";
+import { router } from "expo-router";
 
 const NewPost = () => {
   const [mediaFiles, setMediaFiles] = useState([]);
+  const [value, setValue] = React.useState("public");
+  const toast = useToast();
+
+  const descriptionRef = useRef("");
+  const modeRef = useRef("public");
+  const imagesRef = useRef("");
+
   const handleAttachMedia = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
@@ -51,6 +63,34 @@ const NewPost = () => {
       <Image source={{ uri: item }} style={styles.image} />
     </Box>
   );
+
+  const handleCreatePost = async () => {
+    if (!descriptionRef.current) {
+      toast.show({
+        placement: "bottom",
+        description: "Please type something to post ",
+      });
+      return;
+    }
+
+    try {
+      let description = descriptionRef.current.trim();
+      let mode = modeRef.current;
+      const data = await createNewPost({
+        content: description,
+        mode: mode,
+      });
+      if (data) {
+        toast.show({
+          placement: "top",
+          description: data.message,
+        });
+        router.back();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
   return (
     <>
       <Header title={"Create a post"} />
@@ -60,6 +100,7 @@ const NewPost = () => {
           <Box w={"80%"} h={"full"}>
             <Text>{`@username`}</Text>
             <TextArea
+              onChangeText={(value) => (descriptionRef.current = value)}
               size={"lg"}
               variant={"unstyled"}
               placeholder="✍ What's on your mind? "
@@ -84,6 +125,29 @@ const NewPost = () => {
                 <Icon name="feeling" />
               </Pressable>
             </Flex>
+            <Box>
+              <Radio.Group
+                name="myRadioGroup"
+                accessibilityLabel="favorite number"
+                value={value}
+                onChange={(radioVal) => {
+                  setValue(radioVal);
+                  modeRef.current = radioVal;
+                }}
+              >
+                <HStack space={2}>
+                  <Radio value="protected" my={1}>
+                    Follower only
+                  </Radio>
+                  <Radio value="private" my={1}>
+                    Only me
+                  </Radio>
+                  <Radio value="public" my={1}>
+                    Public
+                  </Radio>
+                </HStack>
+              </Radio.Group>
+            </Box>
           </Box>
         </Flex>
 
@@ -93,7 +157,7 @@ const NewPost = () => {
           direction="row"
         >
           <Box style={{ width: 100 }}>
-            <Button>Create</Button>
+            <Button onPress={() => handleCreatePost()}>Create</Button>
           </Box>
         </Flex>
       </Flex>

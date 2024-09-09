@@ -34,7 +34,6 @@ const Login = () => {
       if (data.user) {
         await setToken("authToken", data.user.token);
         await setAuth();
-        console.log("data get >>>", data);
       }
     } catch (error) {
       console.log("err>>>", error.response);
@@ -42,12 +41,6 @@ const Login = () => {
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (authUser) {
-      router.replace("main/HomePage");
-    }
-  }, [authUser]);
 
   return (
     <>

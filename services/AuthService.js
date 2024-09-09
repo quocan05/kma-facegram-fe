@@ -12,6 +12,8 @@ const axiosInstance = axios.create({
   baseURL: baseConfig.baseURL,
 });
 
+const router = useRouter();
+
 // Interceptor cho request để thêm token vào headers
 axiosInstance.interceptors.request.use(
   async (config) => {
@@ -42,9 +44,10 @@ axiosInstance.interceptors.response.use(
   (error) => {
     // Xử lý lỗi
     if (error.response) {
-      console.error(error.response.data.msg);
+      console.error(error);
       if (error.response.status === 401) {
         console.error("Unauthorized, redirecting to login...");
+        router.replace("Login");
       }
       if (error.response.status === 400) {
         console.log(error.response.data.msg);

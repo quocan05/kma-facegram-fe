@@ -1,0 +1,229 @@
+{
+    "message": "Get suggest posts successfully",
+    "posts": [
+      {
+        "comments": [],
+        "reacts": [],
+        "_id": "66d6e3b7351ff2aa8961ce44",
+        "author": {
+          "_id": "66d6e378d0bda1311f6c320c",
+          "displayName": "John Doe",
+          "avatar": "https://example.com/avatar.jpg"
+        },
+        "image": "https://example.com/image.jpg",
+        "content": "This is a new post",
+        "mode": "public",
+        "__v": 0,
+        "createdAt": "2024-09-06T02:12:41.485Z",
+        "updatedAt": "2024-09-06T02:12:41.485Z"
+      },
+      {
+        "comments": [],
+        "reacts": [],
+        "_id": "66d6e3be351ff2aa8961ce47",
+        "author": {
+          "_id": "66d6e378d0bda1311f6c320c",
+          "displayName": "John Doe",
+          "avatar": "https://example.com/avatar.jpg"
+        },
+        "image": "https://example.com/image.jpg",
+        "content": "This is a new post 2",
+        "mode": "public",
+        "__v": 0,
+        "createdAt": "2024-09-06T02:12:41.485Z",
+        "updatedAt": "2024-09-06T02:12:41.485Z"
+      },
+      {
+        "_id": "66d983dd162be4e90d92ddce",
+        "author": {
+          "_id": "66d803e0162be4e90d92d91a",
+          "displayName": "Johnny Khac",
+          "avatar": "https://example.com/avatar.jpg"
+        },
+        "image": "https://example.com/image.jpg",
+        "content": "Ronaldoooooo siuuuuu",
+        "mode": "public",
+        "comments": [],
+        "reacts": [],
+        "createdAt": "2024-09-05T10:11:41.402Z",
+        "updatedAt": "2024-09-05T10:11:41.405Z",
+        "__v": 0
+      },
+      {
+        "_id": "66d983df162be4e90d92ddd1",
+        "author": {
+          "_id": "66d803e0162be4e90d92d91a",
+          "displayName": "Johnny Khac",
+          "avatar": "https://example.com/avatar.jpg"
+        },
+        "image": "https://example.com/image.jpg",
+        "content": "Ronaldoooooo siuuuuu",
+        "mode": "public",
+        "comments": [],
+        "reacts": [],
+        "createdAt": "2024-09-05T10:11:43.193Z",
+        "updatedAt": "2024-09-05T10:11:43.194Z",
+        "__v": 0
+      },
+      {
+        "_id": "66d983e2162be4e90d92ddd4",
+        "author": {
+          "_id": "66d803e0162be4e90d92d91a",
+          "displayName": "Johnny Khac",
+          "avatar": "https://example.com/avatar.jpg"
+        },
+        "image": "https://example.com/image.jpg",
+        "content": "Ronaldoooooo siuuuuu",
+        "mode": "public",
+        "comments": [],
+        "reacts": [],
+        "createdAt": "2024-09-05T10:11:46.955Z",
+        "updatedAt": "2024-09-05T10:11:46.955Z",
+        "__v": 0
+      },
+      {
+        "_id": "66d983e3162be4e90d92ddd7",
+        "author": {
+          "_id": "66d803e0162be4e90d92d91a",
+          "displayName": "Johnny Khac",
+          "avatar": "https://example.com/avatar.jpg"
+        },
+        "image": "https://example.com/image.jpg",
+        "content": "Ronaldoooooo siuuuuu",
+        "mode": "public",
+        "comments": [],
+        "reacts": [],
+        "createdAt": "2024-09-05T10:11:47.325Z",
+        "updatedAt": "2024-09-05T10:11:47.325Z",
+        "__v": 0
+      },
+      {
+        "_id": "66d983e3162be4e90d92ddda",
+        "author": {
+          "_id": "66d803e0162be4e90d92d91a",
+          "displayName": "Johnny Khac",
+          "avatar": "https://example.com/avatar.jpg"
+        },
+        "image": "https://example.com/image.jpg",
+        "content": "Ronaldoooooo siuuuuu",
+        "mode": "public",
+        "comments": [],
+        "reacts": [],
+        "createdAt": "2024-09-05T10:11:47.584Z",
+        "updatedAt": "2024-09-05T10:11:47.584Z",
+        "__v": 0
+      },
+      {
+        "_id": "66d983e3162be4e90d92dddd",
+        "author": {
+          "_id": "66d803e0162be4e90d92d91a",
+          "displayName": "Johnny Khac",
+          "avatar": "https://example.com/avatar.jpg"
+        },
+        "image": "https://example.com/image.jpg",
+        "content": "Ronaldoooooo siuuuuu",
+        "mode": "public",
+        "comments": [],
+        "reacts": [],
+        "createdAt": "2024-09-05T10:11:47.860Z",
+        "updatedAt": "2024-09-05T10:11:47.861Z",
+        "__v": 0
+      },
+      {
+        "_id": "66d983e4162be4e90d92dde0",
+        "author": {
+          "_id": "66d803e0162be4e90d92d91a",
+          "displayName": "Johnny Khac",
+          "avatar": "https://example.com/avatar.jpg"
+        },
+        "image": "https://example.com/image.jpg",
+        "content": "Ronaldoooooo siuuuuu",
+        "mode": "public",
+        "comments": [],
+        "reacts": [],
+        "createdAt": "2024-09-05T10:11:48.104Z",
+        "updatedAt": "2024-09-05T10:11:48.105Z",
+        "__v": 0
+      },
+      {
+        "_id": "66d983e4162be4e90d92dde3",
+        "author": {
+          "_id": "66d803e0162be4e90d92d91a",
+          "displayName": "Johnny Khac",
+          "avatar": "https://example.com/avatar.jpg"
+        },
+        "image": "https://example.com/image.jpg",
+        "content": "Ronaldoooooo siuuuuu",
+        "mode": "public",
+        "comments": [],
+        "reacts": [],
+        "createdAt": "2024-09-05T10:11:48.367Z",
+        "updatedAt": "2024-09-05T10:11:48.367Z",
+        "__v": 0
+      },
+      {
+        "_id": "66d983e4162be4e90d92dde6",
+        "author": {
+          "_id": "66d803e0162be4e90d92d91a",
+          "displayName": "Johnny Khac",
+          "avatar": "https://example.com/avatar.jpg"
+        },
+        "image": "https://example.com/image.jpg",
+        "content": "Ronaldoooooo siuuuuu",
+        "mode": "public",
+        "comments": [],
+        "reacts": [],
+        "createdAt": "2024-09-05T10:11:48.622Z",
+        "updatedAt": "2024-09-05T10:11:48.623Z",
+        "__v": 0
+      },
+      {
+        "_id": "66d983e4162be4e90d92dde9",
+        "author": {
+          "_id": "66d803e0162be4e90d92d91a",
+          "displayName": "Johnny Khac",
+          "avatar": "https://example.com/avatar.jpg"
+        },
+        "image": "https://example.com/image.jpg",
+        "content": "Ronaldoooooo siuuuuu",
+        "mode": "public",
+        "comments": [],
+        "reacts": [],
+        "createdAt": "2024-09-05T10:11:48.902Z",
+        "updatedAt": "2024-09-05T10:11:48.902Z",
+        "__v": 0
+      },
+      {
+        "_id": "66d983e5162be4e90d92ddec",
+        "author": {
+          "_id": "66d803e0162be4e90d92d91a",
+          "displayName": "Johnny Khac",
+          "avatar": "https://example.com/avatar.jpg"
+        },
+        "image": "https://example.com/image.jpg",
+        "content": "Ronaldoooooo siuuuuu",
+        "mode": "public",
+        "comments": [],
+        "reacts": [],
+        "createdAt": "2024-09-05T10:11:49.362Z",
+        "updatedAt": "2024-09-05T10:11:49.362Z",
+        "__v": 0
+      },
+      {
+        "_id": "66d983e8162be4e90d92ddef",
+        "author": {
+          "_id": "66d803e0162be4e90d92d91a",
+          "displayName": "Johnny Khac",
+          "avatar": "https://example.com/avatar.jpg"
+        },
+        "image": "https://example.com/image.jpg",
+        "content": "Ronaldoooooo siuuuuu",
+        "mode": "public",
+        "comments": [],
+        "reacts": [],
+        "createdAt": "2024-09-05T10:11:52.797Z",
+        "updatedAt": "2024-09-05T10:11:52.797Z",
+        "__v": 0
+      }
+    ]
+  }

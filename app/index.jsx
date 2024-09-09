@@ -1,15 +1,8 @@
-import Loading from "@/components/loading/Loading";
-import { useRouter } from "expo-router";
-import React, { useEffect } from "react";
-import { View } from "react-native";
-import { getToken } from "../services/storage";
+import React from "react";
+import Welcome from "./Welcome";
 
 const index = () => {
-  return (
-    <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-      <Loading />
-    </View>
-  );
+  return <Welcome />;
 };
 
 export default index;

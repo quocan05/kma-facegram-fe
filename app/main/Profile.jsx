@@ -77,14 +77,14 @@ const Profile = () => {
   return (
     <ScrollView>
       <UserHeader user={currentUser} router={router} logOut={handleLogout} />
+      {/* <Post post={currentUser} />
       <Post post={currentUser} />
       <Post post={currentUser} />
       <Post post={currentUser} />
       <Post post={currentUser} />
       <Post post={currentUser} />
       <Post post={currentUser} />
-      <Post post={currentUser} />
-      <Post post={currentUser} />
+      <Post post={currentUser} /> */}
     </ScrollView>
   );
 };

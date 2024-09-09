@@ -10,14 +10,17 @@ export const AuthProvider = ({ children }) => {
   const [authUser, setAuthUser] = useState(null);
   const router = useRouter();
   const getAuthenticatedUser = async () => {
-    const data = await getMe();
-    if (data) {
-      setAuthUser(data.user);
-    }
+    try {
+      const data = await getMe();
+      if (data) {
+        setAuthUser(data.user);
+      }
+    } catch (error) {}
   };
   useEffect(() => {
     const checkAuth = async () => {
       try {
+        console.log("checkauth");
         const token = await getToken("authToken");
         if (token) {
           await getAuthenticatedUser();
@@ -37,7 +40,9 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (!authUser) {
-      router.replace("Welcome");
+      router.replace("Login");
+    } else {
+      router.replace("main/HomePage");
     }
   }, [authUser]);
 

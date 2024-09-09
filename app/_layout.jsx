@@ -5,7 +5,7 @@ import ScreenWrapper from "../components/screen/ScreenWrapper";
 
 const _layout = () => {
   useEffect(() => {
-    console.log("render 1");
+    console.log("render layout");
   }, []);
   return (
     <AuthProvider>
@@ -17,7 +17,11 @@ const _layout = () => {
 };
 
 const MainLayout = () => {
-  return <Stack screenOptions={{ headerShown: false }} />;
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
+    </Stack>
+  );
 };
 
 export default _layout;
