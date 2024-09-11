@@ -1,5 +1,5 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { ScrollView, Text } from "native-base";
+import { ScrollView, Text, VStack } from "native-base";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
@@ -18,12 +18,14 @@ import { useAuth } from "../../contexts/AuthContext";
 import { hp, wp } from "../../helpers/common";
 import { getMe } from "../../services/AuthUser";
 import { getUser } from "../../services/UserService";
+import { getPostOfUser } from "../../services/PostService";
+import ScreenWrapper from "../../components/screen/ScreenWrapper";
 
 const Profile = () => {
   const { auth } = useLocalSearchParams();
   const { authUser, logout } = useAuth();
-
   const [currentUser, setCurrentUser] = useState({});
+  const [postsUser, setPostsUser] = useState([]);
 
   const isMe = auth === "me";
 
@@ -46,6 +48,12 @@ const Profile = () => {
     try {
       const data = await getMe();
       setCurrentUser(data.user);
+      if (data.user) {
+        const postData = await getPostOfUser(data.user._id);
+        if (postData.posts) {
+          setPostsUser(postData.posts);
+        }
+      }
     } catch (error) {}
   };
 
@@ -75,27 +83,30 @@ const Profile = () => {
   );
 
   return (
-    <ScrollView>
-      <UserHeader user={currentUser} router={router} logOut={handleLogout} />
-      {/* <Post post={currentUser} />
-      <Post post={currentUser} />
-      <Post post={currentUser} />
-      <Post post={currentUser} />
-      <Post post={currentUser} />
-      <Post post={currentUser} />
-      <Post post={currentUser} />
-      <Post post={currentUser} /> */}
-    </ScrollView>
+    <ScreenWrapper>
+      <VStack>
+        <Header title={"Profile"} mb={10} />
+        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+          <Icon name={"logout"} color={themes.colors.rose} />
+        </TouchableOpacity>
+        <ScrollView>
+          <UserHeader isMe={isMe} user={currentUser} router={router} />
+          {authUser && postsUser.length > 0 ? (
+            postsUser.map((p) => (
+              <Post key={p._id} post={p} currentUser={currentUser} />
+            ))
+          ) : (
+            <Text>No posts available.</Text>
+          )}
+        </ScrollView>
+      </VStack>
+    </ScreenWrapper>
   );
 };
 
-const UserHeader = ({ user, logOut, router }) => {
+const UserHeader = ({ user, isMe, router }) => {
   return (
     <View style={{ flex: 1 }}>
-      <Header title={"Profile"} />
-      <TouchableOpacity style={styles.logoutButton} onPress={logOut}>
-        <Icon name={"logout"} color={themes.colors.rose} />
-      </TouchableOpacity>
       <View style={styles.container}>
         <View>
           <View style={styles.wrapperHeadProfile}>
@@ -122,12 +133,14 @@ const UserHeader = ({ user, logOut, router }) => {
                 size={hp(10)}
                 rounded={50}
               />
-              <Pressable
-                style={styles.editIcon}
-                onPress={() => router.push("main/EditProfile")}
-              >
-                <Icon name={"edit"} strokeWidth={2.5} size={20} />
-              </Pressable>
+              {isMe && (
+                <Pressable
+                  style={styles.editIcon}
+                  onPress={() => router.push("main/EditProfile")}
+                >
+                  <Icon name={"edit"} strokeWidth={2.5} size={20} />
+                </Pressable>
+              )}
             </View>
           </View>
 
@@ -135,7 +148,7 @@ const UserHeader = ({ user, logOut, router }) => {
             <ButtonCommon onPress={() => console.log("click")} title="Follow" />
             <ButtonCommon
               onPress={() => console.log("click 2")}
-              title="Edit profile"
+              title="Send Message"
             />
           </View>
         </View>
@@ -218,6 +231,7 @@ const styles = StyleSheet.create({
   },
   logoutButton: {
     position: "absolute",
+    top: 7,
     right: 20,
     padding: 5,
     borderRadius: themes.radius.sm,

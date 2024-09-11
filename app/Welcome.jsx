@@ -9,7 +9,7 @@ import { router } from "expo-router";
 import { getToken, removeToken } from "../services/storage";
 const Welcome = () => {
   return (
-    <ScreenWrapper bg={"white"}>
+    <ScreenWrapper>
       <StatusBar style="black" />
       <View style={styles.container}>
         {/* welcome image */}
@@ -64,7 +64,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "space-around",
-    backgroundColor: "white",
+    // backgroundColor: "white",
     paddingHorizontal: wp(4),
   },
   welcomeImage: {

@@ -1,4 +1,11 @@
-import { Platform, Pressable, StyleSheet, TextInput, View } from "react-native";
+import {
+  Keyboard,
+  Platform,
+  Pressable,
+  StyleSheet,
+  TextInput,
+  View,
+} from "react-native";
 import React, { useEffect, useRef, useState } from "react";
 import Comment from "../../components/comment/Comment";
 import {
@@ -8,6 +15,7 @@ import {
   KeyboardAvoidingView,
   ScrollView,
   Text,
+  useToast,
   VStack,
 } from "native-base";
 import Avatar from "../../components/avatar/Avatar";
@@ -15,29 +23,56 @@ import { themes } from "../../constants/theme";
 import { Image } from "expo-image";
 import Icon from "../../assets/icons";
 import { useLocalSearchParams } from "expo-router";
+import { commentPost, getPostDetailById } from "../../services/PostService";
 
 const DetailPost = () => {
   const { postId } = useLocalSearchParams();
-
+  const toast = useToast();
   const [showButtonComment, setShowButtonComment] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false); // State to toggle text expansion
+  const [post, setPost] = useState({});
 
   const commentRef = useRef("");
 
-  const fullPostContent =
-    "Trao đổi với Tuổi Trẻ Online sáng 9-9, bà Trịnh Thị Minh Thanh - phó bí thư thường trực Tỉnh ủy Quảng Ninh (điều hành hoạt động của Tỉnh ủy) - cho biết lãnh đạo tỉnh cùng các sở ngành của địa phương đang tích cực triển khai công tác cứu hộ cứu nạn, khắc phục hậu quả sau cơn bão Yagi.";
-  const truncatedText = fullPostContent.substring(0, 100); // Limit to 100 characters
+  const fetchPost = async () => {
+    try {
+      const data = await getPostDetailById(postId);
+      if (data) {
+        setPost(data.post);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
 
   const handleCommentChange = (value) => {
     commentRef.current = value;
-    // Show the send button only if commentRef is not empty
     setShowButtonComment(value.trim().length > 0);
   };
 
+  const handleCommentPost = async () => {
+    const comment = commentRef.current.trim();
+    try {
+      const data = await commentPost({
+        postId: postId,
+        content: comment,
+      });
+      commentRef.current = "";
+      setShowButtonComment(false);
+      toast.show({ placement: "top", description: "commented" });
+      Keyboard.dismiss();
+    } catch (error) {
+      console.log("Failed to post comment:", error);
+    }
+  };
+
+  handleDeleteComment = async();
+
   useEffect(() => {
-    console.log("post id>>>", postId);
+    fetchPost();
   }, [postId]);
 
+  const postContentExceedsLimit = post.content?.length > 100; // Check if content exceeds 100 characters
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -63,12 +98,20 @@ const DetailPost = () => {
         </HStack>
         <ScrollView>
           <Text>
-            {isExpanded ? fullPostContent : `${truncatedText}... `}
-            <Pressable onPress={() => setIsExpanded(!isExpanded)}>
-              <Text color={themes.colors.textDark}>
-                {isExpanded ? "Show less" : "Read more"}
-              </Text>
-            </Pressable>
+            {postContentExceedsLimit ? (
+              <>
+                {isExpanded
+                  ? post.content
+                  : `${post.content.substring(0, 100)}... `}
+                <Pressable onPress={() => setIsExpanded(!isExpanded)}>
+                  <Text color={themes.colors.textDark}>
+                    {isExpanded ? "Show less" : "Read more"}
+                  </Text>
+                </Pressable>
+              </>
+            ) : (
+              post.content // If content is less than or equal to 100 chars, display full content
+            )}
           </Text>
           <Box>
             <Image
@@ -84,10 +127,16 @@ const DetailPost = () => {
           <Box>
             <HStack space={4}>
               <Pressable>
-                <Icon name={"heart"} extra={`xx likes`} />
+                <Icon
+                  name={"heart"}
+                  extra={`${post.reacts ? post.reacts.length : 0} likes`}
+                />
               </Pressable>
               <Pressable>
-                <Icon name={"comment"} extra={`9 comments`} />
+                <Icon
+                  name={"comment"}
+                  extra={`${post.comments ? post.comments.length : 0} comments`}
+                />
               </Pressable>
               <Pressable>
                 <Icon name={"share"} />
@@ -95,8 +144,11 @@ const DetailPost = () => {
             </HStack>
           </Box>
 
-          <Comment />
-          {/* Add more comments here */}
+          {post.comments && post.comments.length > 0 ? (
+            post.comments.map((cmt) => <Comment comment={cmt} />)
+          ) : (
+            <Text>No comments yet</Text>
+          )}
         </ScrollView>
 
         <HStack
@@ -110,7 +162,7 @@ const DetailPost = () => {
             style={styles.commentInput}
           />
           {showButtonComment && (
-            <Pressable>
+            <Pressable onPress={handleCommentPost}>
               <Icon fill={themes.colors.primaryDark} name="send" />
             </Pressable>
           )}
@@ -125,7 +177,7 @@ export default DetailPost;
 const styles = StyleSheet.create({
   postImage: {
     width: "100%",
-    height: 300,
+    aspectRatio: 1,
     objectFit: "contain",
   },
   commentInputContainer: {

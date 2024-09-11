@@ -10,7 +10,7 @@ import { themes } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { hp, wp } from "../../helpers/common";
 import { getAllPost } from "../../services/PostService";
-import DetailPost from "./DetailPost";
+import ScreenWrapper from "../../components/screen/ScreenWrapper";
 
 const HomePage = () => {
   const { authUser, logout } = useAuth();
@@ -45,7 +45,7 @@ const HomePage = () => {
   );
 
   return (
-    <>
+    <ScreenWrapper>
       <View style={styles.container}>
         {/* header */}
         <View style={styles.header}>
@@ -80,7 +80,7 @@ const HomePage = () => {
               <Avatar
                 uri={""}
                 size={hp(4.3)}
-                rounded={themes.radius.sm}
+                rounded={themes.radius.xxl}
                 style={{ borderWidth: 2 }}
               />
             </Pressable>
@@ -96,7 +96,7 @@ const HomePage = () => {
         </View>
         {/* <FlatList data={posts} renderItem={(p) => <Post post={p} />} /> */}
         <ScrollView>
-          {posts &&
+          {posts.length > 0 &&
             posts.map((p) => (
               <Pressable
                 key={p._id}
@@ -107,12 +107,12 @@ const HomePage = () => {
                   })
                 }
               >
-                <Post key={p._id} post={p} />
+                <Post key={p._id} post={p} currentUser={authUser} />
               </Pressable>
             ))}
         </ScrollView>
       </View>
-    </>
+    </ScreenWrapper>
   );
 };
 

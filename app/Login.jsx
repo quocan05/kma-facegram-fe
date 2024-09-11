@@ -43,7 +43,7 @@ const Login = () => {
   };
 
   return (
-    <>
+    <ScreenWrapper>
       <StatusBar style="dark" />
       <View style={styles.container}>
         <BackButton router={router} />
@@ -92,7 +92,7 @@ const Login = () => {
           </View>
         </View>
       </View>
-    </>
+    </ScreenWrapper>
   );
 };
 

@@ -1,8 +1,8 @@
 import React from "react";
-import Welcome from "./Welcome";
+import Loading from "../components/loading/Loading";
 
 const index = () => {
-  return <Welcome />;
+  return <Loading />;
 };
 
 export default index;

@@ -1,14 +1,14 @@
-import { View, Text } from "react-native";
+import { NativeBaseProvider } from "native-base";
 import React from "react";
+import { View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { KeyboardAvoidingView, NativeBaseProvider } from "native-base";
 
 const ScreenWrapper = ({ children, bg }) => {
   const { top } = useSafeAreaInsets();
-  const paddingTop = top > 0 ? top + 5 : 30;
+  const paddingTop = top;
   return (
     <NativeBaseProvider>
-      <View style={{ flex: 1, backgroundColor: bg, paddingTop }}>
+      <View style={{ flex: 1, backgroundColor: "white", paddingTop }}>
         {children}
       </View>
     </NativeBaseProvider>

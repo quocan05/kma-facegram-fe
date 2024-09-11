@@ -1,34 +1,51 @@
-import { Pressable, StyleSheet, View } from "react-native";
-import React, { useEffect } from "react";
-import {
-  Box,
-  Divider,
-  Flex,
-  HStack,
-  Text,
-  useToast,
-  VStack,
-} from "native-base";
+import React, { useEffect, useState } from "react";
+import { Pressable, StyleSheet } from "react-native";
+import { Box, Divider, HStack, Text, useToast, VStack } from "native-base";
 import Avatar from "../avatar/Avatar";
-import { hp, wp } from "../../helpers/common";
+import { hp } from "../../helpers/common";
 import { themes } from "../../constants/theme";
 import { Image } from "expo-image";
 import Icon from "../../assets/icons";
-import { likePost } from "../../services/PostService";
+import { dislikePost, likePost } from "../../services/PostService";
 
-const Post = ({ post }) => {
+const Post = ({ post, currentUser }) => {
   const { _id, author, content, image, comments, reacts } = post;
+
+  // Check if current user has already liked the post
+  const [isLiked, setIsLiked] = useState(
+    reacts.some((react) => react.author._id === currentUser._id)
+  );
+  const [likeCount, setLikeCount] = useState(reacts.length);
+
   const toast = useToast();
-  const handleLikePost = async () => {
-    const data = await likePost({
-      postId: _id,
-      type: "like",
-    });
-    if (data) {
-      toast.show({
-        placement: "bottom",
-        description: `Liked ${_id}`,
-      });
+
+  // Update the state when the post data changes
+  useEffect(() => {
+    setIsLiked(reacts.some((react) => react.author._id === currentUser._id));
+    setLikeCount(reacts.length);
+  }, [post, reacts, currentUser]);
+
+  const handleLikeToggle = async () => {
+    if (isLiked) {
+      const data = await dislikePost(_id);
+      if (data) {
+        setIsLiked(false);
+        setLikeCount((prev) => prev - 1);
+        toast.show({
+          placement: "bottom",
+          description: `Unliked ${_id}`,
+        });
+      }
+    } else {
+      const data = await likePost({ postId: _id });
+      if (data) {
+        setIsLiked(true);
+        setLikeCount((prev) => prev + 1);
+        toast.show({
+          placement: "bottom",
+          description: `Liked ${_id}`,
+        });
+      }
     }
   };
 
@@ -37,32 +54,43 @@ const Post = ({ post }) => {
       <Divider />
       <HStack space={4} style={styles.post}>
         <Avatar size={hp(6)} rounded={themes.radius.xxl} />
-        <VStack space={2} w={320}>
-          <Flex justifyContent={"space-between"} direction="row" align="center">
+        <VStack space={2} w={310}>
+          <HStack justifyContent={"space-between"} alignItems="center">
             <Text bold fontSize={"lg"}>
               {author.displayName}
             </Text>
             <Pressable>
               <Icon name={"threeDotsHorizontal"} />
             </Pressable>
-          </Flex>
+          </HStack>
           <Box>
             <Text fontSize={"md"}>{content}</Text>
             <Image
               style={styles.postImage}
               source={
-                "https://instagram.fhan17-1.fna.fbcdn.net/v/t51.29350-15/458387850_397299600137898_3371909595937664264_n.jpg?stp=dst-jpg_e35&efg=eyJ2ZW5jb2RlX3RhZyI6ImltYWdlX3VybGdlbi43Njh4NzY4LnNkci5mMjkzNTAuZGVmYXVsdF9pbWFnZSJ9&_nc_ht=instagram.fhan17-1.fna.fbcdn.net&_nc_cat=106&_nc_ohc=dc_DoiVVZK8Q7kNvgHB9WoT&edm=APs17CUBAAAA&ccb=7-5&ig_cache_key=MzQ0OTkwMzU5Mzk4NDU5NDMxNQ%3D%3D.3-ccb7-5&oh=00_AYDgEL6uJ-VFPDU3JYTX2P1m__q9BIEZ020lqnJMR-adqQ&oe=66DF338E&_nc_sid=10d13b"
+                "https://i.pinimg.com/564x/4a/94/24/4a94244dfb56e10283cbc7fff0a98f8a.jpg"
               }
             />
           </Box>
           <Box>
             <HStack space={4}>
-              <Pressable onPress={() => handleLikePost()}>
-                <Icon name={"heart"} extra={reacts.length} />
+              {/* Like Button */}
+              <Pressable onPress={handleLikeToggle}>
+                <Icon
+                  name={"heart"}
+                  size={24}
+                  fill={isLiked ? themes.colors.rose : "none"}
+                  color={isLiked ? themes.colors.rose : themes.colors.text}
+                  extra={likeCount}
+                />
               </Pressable>
+
+              {/* Comment Button */}
               <Pressable>
-                <Icon name={"comment"} extra={9} />
+                <Icon name={"comment"} extra={comments.length} />
               </Pressable>
+
+              {/* Share Button */}
               <Pressable>
                 <Icon name={"share"} />
               </Pressable>
@@ -82,7 +110,7 @@ const styles = StyleSheet.create({
   },
   postImage: {
     width: "100%",
-    height: 300,
+    aspectRatio: 1,
   },
   post: {
     padding: 10,

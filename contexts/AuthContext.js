@@ -1,57 +1,58 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
 import { useRouter } from "expo-router";
-import { TOKEN } from "../constants/variables";
-import { getToken, removeToken } from "../services/storage"; // Giả sử bạn có hàm để xóa token
+import React, { createContext, useContext, useEffect, useState } from "react";
 import { getMe } from "../services/AuthUser";
+import { getToken, removeToken } from "../services/storage"; // Assume you have token removal function
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [authUser, setAuthUser] = useState(null);
+  const [loading, setLoading] = useState(true); // To prevent premature redirection
   const router = useRouter();
+
   const getAuthenticatedUser = async () => {
     try {
       const data = await getMe();
       if (data) {
         setAuthUser(data.user);
       }
-    } catch (error) {}
+    } catch (error) {
+      console.error("Error fetching user data", error);
+    }
   };
+
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        console.log("checkauth");
         const token = await getToken("authToken");
         if (token) {
           await getAuthenticatedUser();
-          if (authUser) {
-            router.replace("main/HomePage"); // Redirect to home if authenticated
-          }
-        } else {
-          router.replace("Welcome"); // Redirect to welcome screen if not authenticated
         }
+        setLoading(false); // Loading is done whether authUser exists or not
       } catch (error) {
         console.error("Error checking authentication", error);
-        router.replace("Welcome"); // Fallback to welcome screen
+        setLoading(false);
       }
     };
+
     checkAuth();
   }, []);
 
   useEffect(() => {
-    if (!authUser) {
-      router.replace("Login");
-    } else {
-      router.replace("main/HomePage");
+    if (!loading) {
+      if (authUser) {
+        router.replace("main/HomePage"); // Redirect to HomePage if authenticated
+      } else {
+        router.replace("Welcome"); // Redirect to Welcome if not authenticated
+      }
     }
-  }, [authUser]);
+  }, [authUser, loading]); // Only run this after loading is done and authUser has a value
 
   const setAuth = () => {
     getAuthenticatedUser();
   };
 
   const logout = async () => {
-    console.log("remove");
     await removeToken("authToken");
     setAuthUser(null);
   };

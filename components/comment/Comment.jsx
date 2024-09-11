@@ -1,27 +1,48 @@
-import { StyleSheet, Text, View } from "react-native";
-import React from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import React, { useEffect } from "react";
 import { Box, Flex, HStack } from "native-base";
 import { AntDesign } from "@expo/vector-icons"; // AntDesign icons include the heart
 import Avatar from "../avatar/Avatar";
 import { themes } from "../../constants/theme";
 import Icon from "../../assets/icons";
+import { useAuth } from "../../contexts/AuthContext";
 
-const Comment = ({ avatarUrl, username, content }) => {
+const Comment = ({ comment }) => {
+  const { authUser } = useAuth();
+  const { _id, author, content } = comment;
+
+  const handleDeleteComment = async () => {
+    console.log("click delete comment");
+  };
+
   return (
-    <Box py={2}>
-      <HStack alignItems="center" space={3}>
+    <Box py={2.5}>
+      <HStack alignItems="center" space={4}>
         {/* Avatar */}
-        <Avatar size={42} uri={""} rounded={themes.radius.xxl} />
+        {/* <Avatar size={42} uri={""} rounded={themes.radius.xxl} /> */}
         <Box flex={1}>
           {/* Username and Comment */}
           <Text>
-            <Text style={styles.username}>@neymarjr</Text> You need to learn how
-            to say PUNDE in 🇲🇾 Amo ver voces felizes 😍❤️🫶🏼
+            <Text
+              style={[
+                styles.username,
+                {
+                  color:
+                    authUser.userName === author.userName
+                      ? themes.colors.primary
+                      : "black",
+                },
+              ]}
+            >{`@${author.userName}`}</Text>{" "}
+            {content}
           </Text>
-          <Text style={styles.likedComment}>People liked comment</Text>
         </Box>
         {/* Heart Icon */}
-        <Icon name={"heart"} size={18} />
+        {authUser._id === author._id && (
+          <Pressable onPress={handleDeleteComment}>
+            <Icon name={"delete"} size={18} />
+          </Pressable>
+        )}
       </HStack>
     </Box>
   );
