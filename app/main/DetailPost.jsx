@@ -66,8 +66,6 @@ const DetailPost = () => {
     }
   };
 
-  handleDeleteComment = async();
-
   useEffect(() => {
     fetchPost();
   }, [postId]);
