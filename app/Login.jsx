@@ -36,7 +36,7 @@ const Login = () => {
         await setAuth();
       }
     } catch (error) {
-      console.log("err>>>", error.response);
+      console.log("err>>>", error);
     } finally {
       setLoading(false);
     }

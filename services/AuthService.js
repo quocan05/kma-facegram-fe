@@ -44,7 +44,7 @@ axiosInstance.interceptors.response.use(
   (error) => {
     // Xử lý lỗi
     if (error.response) {
-      console.error(error);
+      console.error(error.response.message);
       if (error.response.status === 401) {
         console.error("Unauthorized, redirecting to login...");
         router.replace("Login");

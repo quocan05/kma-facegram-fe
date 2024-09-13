@@ -34,3 +34,8 @@ export const commentPost = async (param) => {
   const response = await axiosInstance.post("/comments", param);
   return response.data;
 };
+
+export const deleteComment = async (commentId) => {
+  const response = await axiosInstance.delete(`/comments/${commentId}`);
+  return response.data;
+};

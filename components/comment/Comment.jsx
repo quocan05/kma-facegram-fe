@@ -1,19 +1,13 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
-import React, { useEffect } from "react";
-import { Box, Flex, HStack } from "native-base";
-import { AntDesign } from "@expo/vector-icons"; // AntDesign icons include the heart
-import Avatar from "../avatar/Avatar";
-import { themes } from "../../constants/theme";
+import { Box, HStack } from "native-base";
+import React from "react";
+import { Pressable, StyleSheet, Text } from "react-native";
 import Icon from "../../assets/icons";
+import { themes } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
 
-const Comment = ({ comment }) => {
+const Comment = ({ comment, onDelete }) => {
   const { authUser } = useAuth();
   const { _id, author, content } = comment;
-
-  const handleDeleteComment = async () => {
-    console.log("click delete comment");
-  };
 
   return (
     <Box py={2.5}>
@@ -39,7 +33,7 @@ const Comment = ({ comment }) => {
         </Box>
         {/* Heart Icon */}
         {authUser._id === author._id && (
-          <Pressable onPress={handleDeleteComment}>
+          <Pressable onPress={() => onDelete(_id)}>
             <Icon name={"delete"} size={18} />
           </Pressable>
         )}

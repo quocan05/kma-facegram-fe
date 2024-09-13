@@ -1,4 +1,6 @@
+import React, { useEffect, useRef, useState } from "react";
 import {
+  Alert,
   Keyboard,
   Platform,
   Pressable,
@@ -6,8 +8,6 @@ import {
   TextInput,
   View,
 } from "react-native";
-import React, { useEffect, useRef, useState } from "react";
-import Comment from "../../components/comment/Comment";
 import {
   Box,
   Divider,
@@ -23,15 +23,27 @@ import { themes } from "../../constants/theme";
 import { Image } from "expo-image";
 import Icon from "../../assets/icons";
 import { useLocalSearchParams } from "expo-router";
-import { commentPost, getPostDetailById } from "../../services/PostService";
+import {
+  commentPost,
+  deleteComment,
+  getPostDetailById,
+  dislikePost,
+  likePost,
+} from "../../services/PostService";
+import { useAuth } from "../../contexts/AuthContext";
+import Comment from "../../components/comment/Comment";
 
 const DetailPost = () => {
   const { postId } = useLocalSearchParams();
+  const { authUser } = useAuth();
   const toast = useToast();
+
+  // State to store post data, like status, and like count
+  const [post, setPost] = useState({});
+  const [isLiked, setIsLiked] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
   const [showButtonComment, setShowButtonComment] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false); // State to toggle text expansion
-  const [post, setPost] = useState({});
-
   const commentRef = useRef("");
 
   const fetchPost = async () => {
@@ -39,9 +51,38 @@ const DetailPost = () => {
       const data = await getPostDetailById(postId);
       if (data) {
         setPost(data.post);
+        setIsLiked(
+          data.post.reacts.some((react) => react.author._id === authUser._id)
+        );
+        setLikeCount(data.post.reacts.length);
       }
     } catch (error) {
       console.log(error);
+    }
+  };
+
+  // Handle like/unlike functionality
+  const handleLikeToggle = async () => {
+    if (isLiked) {
+      const data = await dislikePost(postId);
+      if (data) {
+        setIsLiked(false);
+        setLikeCount((prev) => prev - 1);
+        toast.show({
+          placement: "bottom",
+          description: `Unliked ${postId}`,
+        });
+      }
+    } else {
+      const data = await likePost({ postId });
+      if (data) {
+        setIsLiked(true);
+        setLikeCount((prev) => prev + 1);
+        toast.show({
+          placement: "bottom",
+          description: `Liked ${postId}`,
+        });
+      }
     }
   };
 
@@ -57,12 +98,65 @@ const DetailPost = () => {
         postId: postId,
         content: comment,
       });
-      commentRef.current = "";
-      setShowButtonComment(false);
-      toast.show({ placement: "top", description: "commented" });
-      Keyboard.dismiss();
+      if (data) {
+        const newComment = {
+          _id: data.comment._id,
+          author: {
+            _id: authUser._id,
+            displayName: authUser.displayName,
+            userName: authUser.userName,
+          },
+          content: comment,
+          __v: 0,
+        };
+        setPost((prevPost) => ({
+          ...prevPost,
+          comments: [...prevPost.comments, newComment],
+        }));
+      }
     } catch (error) {
       console.log("Failed to post comment:", error);
+    } finally {
+      setShowButtonComment(false);
+      toast.show({ placement: "top", description: "commented" });
+      commentRef.current = "";
+      Keyboard.dismiss();
+    }
+  };
+
+  const handleDeleteComment = (commentId) => {
+    try {
+      Alert.alert(
+        "Delete comment",
+        "Are your sure want to delete this comment ?",
+        [
+          {
+            text: "Nope",
+            onPress: () => console.log("Cancel modal"),
+            style: "cancel",
+          },
+          {
+            text: "Yes bro",
+            onPress: async () => {
+              const data = await deleteComment(commentId);
+              if (data) {
+                toast.show({
+                  placement: "top",
+                  description: "deleted comment",
+                });
+                setPost((prevPost) => ({
+                  ...prevPost,
+                  comments: prevPost.comments.filter(
+                    (p) => p._id !== commentId
+                  ),
+                }));
+              }
+            },
+          },
+        ]
+      );
+    } catch (error) {
+      console.log(error);
     }
   };
 
@@ -71,6 +165,7 @@ const DetailPost = () => {
   }, [postId]);
 
   const postContentExceedsLimit = post.content?.length > 100; // Check if content exceeds 100 characters
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}
@@ -84,9 +179,9 @@ const DetailPost = () => {
             <Pressable>
               <VStack>
                 <Text bold fontSize={16}>
-                  Vang a Khac
+                  {post.author?.displayName}
                 </Text>
-                <Text fontSize={12}>@neymarjr</Text>
+                <Text fontSize={12}>@{post.author?.userName}</Text>
               </VStack>
             </Pressable>
           </HStack>
@@ -108,7 +203,7 @@ const DetailPost = () => {
                 </Pressable>
               </>
             ) : (
-              post.content // If content is less than or equal to 100 chars, display full content
+              post.content
             )}
           </Text>
           <Box>
@@ -122,20 +217,29 @@ const DetailPost = () => {
 
           <Divider />
 
+          {/* Like, Comment, Share buttons */}
           <Box>
             <HStack space={4}>
-              <Pressable>
+              {/* Like Button */}
+              <Pressable onPress={handleLikeToggle}>
                 <Icon
                   name={"heart"}
-                  extra={`${post.reacts ? post.reacts.length : 0} likes`}
+                  size={24}
+                  fill={isLiked ? themes.colors.rose : "none"}
+                  color={isLiked ? themes.colors.rose : themes.colors.text}
+                  extra={`${likeCount} likes`}
                 />
               </Pressable>
+
+              {/* Comment Button */}
               <Pressable>
                 <Icon
                   name={"comment"}
                   extra={`${post.comments ? post.comments.length : 0} comments`}
                 />
               </Pressable>
+
+              {/* Share Button */}
               <Pressable>
                 <Icon name={"share"} />
               </Pressable>
@@ -143,7 +247,13 @@ const DetailPost = () => {
           </Box>
 
           {post.comments && post.comments.length > 0 ? (
-            post.comments.map((cmt) => <Comment comment={cmt} />)
+            post.comments.map((cmt) => (
+              <Comment
+                key={cmt._id}
+                onDelete={() => handleDeleteComment(cmt._id)}
+                comment={cmt}
+              />
+            ))
           ) : (
             <Text>No comments yet</Text>
           )}

@@ -8,3 +8,8 @@ export const hp = (percentage) => {
 export const wp = (percentage) => {
   return (percentage * deviceWidth) / 100;
 };
+
+export const convertImageToBlob = async (img) => {
+  const response = await fetch(img);
+  return response.blob();
+};
