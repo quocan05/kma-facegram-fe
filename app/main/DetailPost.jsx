@@ -1,3 +1,18 @@
+import { Image } from "expo-image";
+import { useLocalSearchParams } from "expo-router";
+import {
+  AlertDialog,
+  Box,
+  Button,
+  Divider,
+  HStack,
+  KeyboardAvoidingView,
+  Menu,
+  ScrollView,
+  Text,
+  useToast,
+  VStack,
+} from "native-base";
 import React, { useEffect, useRef, useState } from "react";
 import {
   Alert,
@@ -6,32 +21,22 @@ import {
   Pressable,
   StyleSheet,
   TextInput,
-  View,
 } from "react-native";
-import {
-  Box,
-  Divider,
-  HStack,
-  KeyboardAvoidingView,
-  ScrollView,
-  Text,
-  useToast,
-  VStack,
-} from "native-base";
-import Avatar from "../../components/avatar/Avatar";
-import { themes } from "../../constants/theme";
-import { Image } from "expo-image";
 import Icon from "../../assets/icons";
-import { useLocalSearchParams } from "expo-router";
+import Avatar from "../../components/avatar/Avatar";
+import Comment from "../../components/comment/Comment";
+import ScreenWrapper from "../../components/screen/ScreenWrapper";
+import { themes } from "../../constants/theme";
+import { useAuth } from "../../contexts/AuthContext";
+import { wp } from "../../helpers/common";
 import {
   commentPost,
   deleteComment,
-  getPostDetailById,
+  deletePost,
   dislikePost,
+  getPostDetailById,
   likePost,
 } from "../../services/PostService";
-import { useAuth } from "../../contexts/AuthContext";
-import Comment from "../../components/comment/Comment";
 
 const DetailPost = () => {
   const { postId } = useLocalSearchParams();
@@ -45,6 +50,9 @@ const DetailPost = () => {
   const [showButtonComment, setShowButtonComment] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false); // State to toggle text expansion
   const commentRef = useRef("");
+
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const fetchPost = async () => {
     try {
@@ -160,6 +168,30 @@ const DetailPost = () => {
     }
   };
 
+  const onDeletePost = async () => {
+    try {
+      setLoading(true);
+      const data = await deletePost(postId); // Async service to delete the post
+      if (data) {
+        toast.show({
+          placement: "top",
+          description: "Post deleted successfully",
+        });
+        // Optionally: navigate back or update the UI
+      }
+    } catch (error) {
+      console.log(error);
+      toast.show({
+        placement: "top",
+        description: "Failed to delete post",
+      });
+    } finally {
+      setLoading(false);
+
+      setIsOpen(false); // Close dialog after delete
+    }
+  };
+
   useEffect(() => {
     fetchPost();
   }, [postId]);
@@ -172,110 +204,155 @@ const DetailPost = () => {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 32}
     >
-      <VStack space={2} flex={1}>
-        <HStack justifyContent={"space-between"} alignItems={"center"}>
-          <HStack alignItems={"center"} space={3}>
-            <Avatar uri={""} size={48} rounded={themes.radius.xxl} />
-            <Pressable>
-              <VStack>
-                <Text bold fontSize={16}>
-                  {post.author?.displayName}
-                </Text>
-                <Text fontSize={12}>@{post.author?.userName}</Text>
-              </VStack>
-            </Pressable>
-          </HStack>
-          <Pressable>
-            <Icon name="threeDotsHorizontal" />
-          </Pressable>
-        </HStack>
-        <ScrollView>
-          <Text>
-            {postContentExceedsLimit ? (
-              <>
-                {isExpanded
-                  ? post.content
-                  : `${post.content.substring(0, 100)}... `}
-                <Pressable onPress={() => setIsExpanded(!isExpanded)}>
-                  <Text color={themes.colors.textDark}>
-                    {isExpanded ? "Show less" : "Read more"}
+      <ScreenWrapper>
+        <VStack space={2} flex={1}>
+          <HStack
+            justifyContent={"space-between"}
+            alignItems={"center"}
+            style={{ paddingHorizontal: wp(3.2) }}
+          >
+            <HStack alignItems={"center"} space={3}>
+              <Avatar
+                uri={post.author ? post.author.avatar : ""}
+                size={48}
+                rounded={themes.radius.xxl}
+              />
+              <Pressable>
+                <VStack>
+                  <Text bold fontSize={16}>
+                    {post.author?.displayName}
                   </Text>
-                </Pressable>
-              </>
-            ) : (
-              post.content
-            )}
-          </Text>
-          <Box>
-            <Image
-              source={
-                "https://i.pinimg.com/564x/4a/94/24/4a94244dfb56e10283cbc7fff0a98f8a.jpg"
-              }
-              style={styles.postImage}
-            />
-          </Box>
-
-          <Divider />
-
-          {/* Like, Comment, Share buttons */}
-          <Box>
-            <HStack space={4}>
-              {/* Like Button */}
-              <Pressable onPress={handleLikeToggle}>
-                <Icon
-                  name={"heart"}
-                  size={24}
-                  fill={isLiked ? themes.colors.rose : "none"}
-                  color={isLiked ? themes.colors.rose : themes.colors.text}
-                  extra={`${likeCount} likes`}
-                />
-              </Pressable>
-
-              {/* Comment Button */}
-              <Pressable>
-                <Icon
-                  name={"comment"}
-                  extra={`${post.comments ? post.comments.length : 0} comments`}
-                />
-              </Pressable>
-
-              {/* Share Button */}
-              <Pressable>
-                <Icon name={"share"} />
+                  <Text fontSize={12}>@{post.author?.userName}</Text>
+                </VStack>
               </Pressable>
             </HStack>
-          </Box>
+            <Menu
+              trigger={(triggerProps) => (
+                <Pressable {...triggerProps}>
+                  <Icon name="threeDotsHorizontal" />
+                </Pressable>
+              )}
+            >
+              {post.author && post.author._id === authUser._id && (
+                <>
+                  <Menu.Item onPress={() => console.log("Delete Post")}>
+                    Update Post
+                  </Menu.Item>
+                  <Menu.Item onPress={() => setIsOpen(true)}>
+                    Delete Post
+                  </Menu.Item>
+                </>
+              )}
+            </Menu>
+          </HStack>
+          <ScrollView>
+            <Text>
+              {postContentExceedsLimit ? (
+                <>
+                  {isExpanded
+                    ? post.content
+                    : `${post.content.substring(0, 100)}... `}
+                  <Pressable onPress={() => setIsExpanded(!isExpanded)}>
+                    <Text color={themes.colors.textDark}>
+                      {isExpanded ? "Show less" : "Read more"}
+                    </Text>
+                  </Pressable>
+                </>
+              ) : (
+                post.content
+              )}
+            </Text>
+            {Array.isArray(post.images) && post.images.length > 0 && (
+              <Box>
+                <Image source={post.images[0]} style={styles.postImage} />
+              </Box>
+            )}
 
-          {post.comments && post.comments.length > 0 ? (
-            post.comments.map((cmt) => (
-              <Comment
-                key={cmt._id}
-                onDelete={() => handleDeleteComment(cmt._id)}
-                comment={cmt}
-              />
-            ))
-          ) : (
-            <Text>No comments yet</Text>
-          )}
-        </ScrollView>
+            <Divider />
 
-        <HStack
-          space={2}
-          alignItems="center"
-          style={styles.commentInputContainer}
+            {/* Like, Comment, Share buttons */}
+            <Box style={{ padding: wp(2.4) }}>
+              <HStack space={4}>
+                {/* Like Button */}
+                <Pressable onPress={handleLikeToggle}>
+                  <Icon
+                    name={"heart"}
+                    size={24}
+                    fill={isLiked ? themes.colors.rose : "none"}
+                    color={isLiked ? themes.colors.rose : themes.colors.text}
+                    extra={`${likeCount} likes`}
+                  />
+                </Pressable>
+
+                {/* Comment Button */}
+                <Pressable>
+                  <Icon
+                    name={"comment"}
+                    extra={`${
+                      post.comments ? post.comments.length : 0
+                    } comments`}
+                  />
+                </Pressable>
+
+                {/* Share Button */}
+                <Pressable>
+                  <Icon name={"share"} />
+                </Pressable>
+              </HStack>
+            </Box>
+            <Box style={{ paddingHorizontal: wp(2.4) }}>
+              {post.comments && post.comments.length > 0 ? (
+                post.comments.map((cmt) => (
+                  <Comment
+                    key={cmt._id}
+                    onDelete={() => handleDeleteComment(cmt._id)}
+                    comment={cmt}
+                  />
+                ))
+              ) : (
+                <Text>No comments yet</Text>
+              )}
+            </Box>
+          </ScrollView>
+
+          <HStack
+            space={2}
+            alignItems="center"
+            style={styles.commentInputContainer}
+          >
+            <TextInput
+              onChangeText={handleCommentChange}
+              placeholder="Add a comment..."
+              style={styles.commentInput}
+            />
+            {showButtonComment && (
+              <Pressable onPress={handleCommentPost}>
+                <Icon fill={themes.colors.primaryDark} name="send" />
+              </Pressable>
+            )}
+          </HStack>
+        </VStack>
+        <AlertDialog
+          leastDestructiveRef={undefined}
+          isOpen={isOpen}
+          onClose={() => setIsOpen(false)}
         >
-          <TextInput
-            onChangeText={handleCommentChange}
-            placeholder="Add a comment..."
-            style={styles.commentInput}
-          />
-          {showButtonComment && (
-            <Pressable onPress={handleCommentPost}>
-              <Icon fill={themes.colors.primaryDark} name="send" />
-            </Pressable>
-          )}
-        </HStack>
-      </VStack>
+          <AlertDialog.Content>
+            <AlertDialog.Header>Confirm Delete</AlertDialog.Header>
+            <AlertDialog.Body>
+              Are you sure you want to delete this post?
+            </AlertDialog.Body>
+            <AlertDialog.Footer>
+              <Button variant="unstyled" onPress={() => setIsOpen(false)}>
+                Cancel
+              </Button>
+              <Button colorScheme="emerald" onPress={onDeletePost}>
+                Delete
+              </Button>
+            </AlertDialog.Footer>
+          </AlertDialog.Content>
+        </AlertDialog>
+      </ScreenWrapper>
     </KeyboardAvoidingView>
   );
 };

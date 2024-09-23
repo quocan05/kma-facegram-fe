@@ -1,11 +1,7 @@
 import axios from "axios";
+import { useRouter } from "expo-router";
 import { baseConfig } from "../configs/baseConfig";
 import { getToken } from "./storage";
-import { TOKEN } from "../constants/variables";
-import { useRouter } from "expo-router";
-import { handleUnauthorized } from "../helpers/auth";
-import { showToast } from "../helpers/toast";
-import { useAuth } from "../contexts/AuthContext";
 
 // Tạo instance của axios
 const axiosInstance = axios.create({

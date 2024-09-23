@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Pressable, StyleSheet } from "react-native";
+import { Pressable, StyleSheet, TouchableOpacity } from "react-native";
 import { Box, Divider, HStack, Text, useToast, VStack } from "native-base";
 import Avatar from "../avatar/Avatar";
 import { hp } from "../../helpers/common";
@@ -7,9 +7,13 @@ import { themes } from "../../constants/theme";
 import { Image } from "expo-image";
 import Icon from "../../assets/icons";
 import { dislikePost, likePost } from "../../services/PostService";
+import { useRouter } from "expo-router";
+import { useAuth } from "../../contexts/AuthContext";
 
 const Post = ({ post, currentUser }) => {
-  const { _id, author, content, image, comments, reacts } = post;
+  const { _id, author, content, images, comments, reacts } = post;
+  const { authUser } = useAuth();
+  const router = useRouter();
 
   // Check if current user has already liked the post
   const [isLiked, setIsLiked] = useState(
@@ -53,24 +57,42 @@ const Post = ({ post, currentUser }) => {
     <Box style={styles.postContainer}>
       <Divider />
       <HStack space={4} style={styles.post}>
-        <Avatar size={hp(6)} rounded={themes.radius.xxl} />
+        <Avatar
+          size={hp(6)}
+          rounded={themes.radius.xxl}
+          uri={author.avatar ? author.avatar : ""}
+        />
         <VStack space={2} w={310}>
           <HStack justifyContent={"space-between"} alignItems="center">
-            <Text bold fontSize={"lg"}>
-              {author.displayName}
-            </Text>
-            <Pressable>
-              <Icon name={"threeDotsHorizontal"} />
-            </Pressable>
+            <TouchableOpacity
+              onPress={() =>
+                router.push({
+                  pathname: "main/Profile",
+                  params: {
+                    userId: author._id,
+                    auth: authUser._id === author._id ? "me" : "",
+                  },
+                })
+              }
+            >
+              <Text bold fontSize={"lg"}>
+                {author.displayName}
+              </Text>
+            </TouchableOpacity>
           </HStack>
           <Box>
             <Text fontSize={"md"}>{content}</Text>
-            <Image
-              style={styles.postImage}
-              source={
-                "https://i.pinimg.com/564x/4a/94/24/4a94244dfb56e10283cbc7fff0a98f8a.jpg"
-              }
-            />
+            {images.length > 0 && (
+              <Image
+                style={styles.postImage}
+                source={{
+                  uri: images
+                    ? images[0]
+                    : "https://i.pinimg.com/564x/4a/94/24/4a94244dfb56e10283cbc7fff0a98f8a.jpg",
+                  cache: "force-cache",
+                }}
+              />
+            )}
           </Box>
           <Box>
             <HStack space={4}>
@@ -109,7 +131,7 @@ const styles = StyleSheet.create({
     width: "100%",
   },
   postImage: {
-    width: "100%",
+    width: "90%",
     aspectRatio: 1,
   },
   post: {

@@ -44,7 +44,9 @@ const validationSchema = Yup.object({
 const EditProfileForm = () => {
   const [userEdit, setUserEdit] = useState({});
   const [avatarUser, setAvatarUser] = useState();
+  const [mediaFiles, setMediaFiles] = useState([]);
   const router = useRouter();
+  const toast = useToast();
 
   const fetchDetailUser = async () => {
     try {
@@ -66,21 +68,32 @@ const EditProfileForm = () => {
     });
     if (!res.canceled) {
       const newAvatar = res.assets[0].uri;
+      setMediaFiles([newAvatar]);
       setAvatarUser(newAvatar);
     }
   };
 
   const onSubmit = async (values) => {
     try {
-      if (avatarUser) {
-        const urlAvatar = await uploadImage(avatarUser);
+      if (mediaFiles.length > 0) {
+        const urlAvatar = await uploadImage(mediaFiles);
         if (urlAvatar) {
           console.log("url avatar>>>", urlAvatar.urls);
           await editUser({ ...values, avatar: urlAvatar.urls[0] });
+          toast.show({
+            placement: "top",
+            description: "Update profie and avatar successfully !!",
+          });
         }
+      } else {
+        await editUser(values);
+        toast.show({
+          placement: "top",
+          description: "Update successfully !!",
+        });
       }
     } catch (error) {
-      console.log("err when update>>>", error);
+      console.log("err when update>>>", error.response);
     }
   };
 

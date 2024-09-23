@@ -10,18 +10,27 @@ export const getUserImageSrc = (path) => {
   }
 };
 
-export const uploadImage = async (imageUri) => {
+export const getImageSrc = (path) => {
+  if (path) {
+    return { uri: path };
+  } else {
+    return require("../assets/images/defaultavatar.avif");
+  }
+};
+
+export const uploadImage = async (imageUris) => {
   const formData = new FormData();
-  //append image\
-  const file = {
-    uri: Platform.OS === "ios" ? imageUri.replace("file://", "") : imageUri,
-    type: `image/${imageUri.split(".").pop()}`, // Get MIME type
-    name: imageUri.split("/").pop(),
-  };
+  imageUris.forEach((imageUri, index) => {
+    const file = {
+      uri: Platform.OS === "ios" ? imageUri.replace("file://", "") : imageUri,
+      type: `image/${imageUri.split(".").pop()}`,
+      name: `image_${index}_${imageUri.split("/").pop()}`, // Unique file name for each image
+    };
 
-  formData.append("files", file);
+    formData.append("files", file);
+  });
 
-  const response = await axiosInstance.post("file/upload", formData, {
+  const response = await axiosInstance.post("/file/upload", formData, {
     headers: {
       "Content-Type": "multipart/form-data", // Axios will set the boundary automatically
     },

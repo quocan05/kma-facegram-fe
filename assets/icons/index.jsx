@@ -28,6 +28,7 @@ import { Box, Text } from "native-base";
 import Write from "./Write";
 import Attach from "./Attach";
 import FaceFeeling from "./FaceFeeling";
+import Info from "./Info";
 
 const icons = {
   home: Home,
@@ -57,6 +58,7 @@ const icons = {
   write: Write,
   attach: Attach,
   feeling: FaceFeeling,
+  info: Info,
 };
 
 const Icon = ({

@@ -29,6 +29,7 @@ import { createNewPost } from "../../services/PostService";
 import { router } from "expo-router";
 import { getMe } from "../../services/AuthUser";
 import { useAuth } from "../../contexts/AuthContext";
+import { uploadImage } from "../../services/ImageService";
 
 const NewPost = () => {
   const { authUser } = useAuth();
@@ -69,7 +70,8 @@ const NewPost = () => {
   );
 
   const handleCreatePost = async () => {
-    if (!descriptionRef.current) {
+    // Ensure the description is not empty
+    if (!descriptionRef.current.trim()) {
       toast.show({
         placement: "bottom",
         description: "Please type something to post",
@@ -77,22 +79,39 @@ const NewPost = () => {
       return;
     }
 
+    let images = [];
+
     try {
+      // If there are media files, upload them and get the URLs
+      if (mediaFiles.length > 0) {
+        const urlsImage = await uploadImage(mediaFiles);
+        if (urlsImage && urlsImage.urls) {
+          console.log(urlsImage);
+          images = urlsImage.urls;
+        }
+      }
+
+      // Prepare the data for creating the post
       let description = descriptionRef.current.trim();
       let mode = modeRef.current;
+
       const data = await createNewPost({
+        images, // If there are no images, this will be an empty array
         content: description,
-        mode: mode,
+        mode: "public",
       });
+
+      // Handle success
       if (data) {
+        console.log("Post created successfully:", data);
         toast.show({
           placement: "top",
           description: data.message,
         });
-        router.back();
+        router.back(); // Navigate back after creating the post
       }
     } catch (error) {
-      console.log(error);
+      console.log("Error creating post:", error);
     }
   };
 
@@ -107,7 +126,11 @@ const NewPost = () => {
         <VStack flex={1} justifyContent="space-between" px={4}>
           <Box>
             <HStack>
-              <Avatar uri={""} size={hp(8)} rounded={50} />
+              <Avatar
+                uri={authUser ? authUser.avatar : ""}
+                size={hp(8)}
+                rounded={50}
+              />
               <VStack w={"80%"}>
                 <Text>{`@${authUser.userName}`}</Text>
                 <TextArea
@@ -136,7 +159,7 @@ const NewPost = () => {
                 </HStack>
               </VStack>
             </HStack>
-            <VStack mt={4}>
+            {/* <VStack mt={4}>
               <Radio.Group
                 name="myRadioGroup"
                 accessibilityLabel="favorite number"
@@ -158,9 +181,8 @@ const NewPost = () => {
                   </Radio>
                 </HStack>
               </Radio.Group>
-            </VStack>
+            </VStack> */}
           </Box>
-
           <VStack style={styles.bottomContainer} alignItems="center">
             <Button onPress={handleCreatePost} width="100%">
               Create

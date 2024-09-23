@@ -15,6 +15,11 @@ export const createNewPost = async (param) => {
   return response.data;
 };
 
+export const deletePost = async (postId) => {
+  const response = await axiosInstance.delete(`/posts/${postId}`);
+  return response.data;
+};
+
 export const likePost = async (param) => {
   const response = await axiosInstance.post("/react/", param);
   return response.data;

@@ -7,31 +7,32 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
+  RefreshControl, // Import RefreshControl
 } from "react-native";
 import Icon from "../../assets/icons";
 import Avatar from "../../components/avatar/Avatar";
 import ButtonCommon from "../../components/button/CommonButton";
 import Header from "../../components/header/Header";
 import Post from "../../components/post/Post";
+import ScreenWrapper from "../../components/screen/ScreenWrapper";
 import { themes } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
 import { hp, wp } from "../../helpers/common";
 import { getMe } from "../../services/AuthUser";
-import { getUser } from "../../services/UserService";
 import { getPostOfUser } from "../../services/PostService";
-import ScreenWrapper from "../../components/screen/ScreenWrapper";
+import { getUser } from "../../services/UserService";
 
 const Profile = () => {
-  const { auth } = useLocalSearchParams();
+  const { auth, userId } = useLocalSearchParams();
   const { authUser, logout } = useAuth();
   const [currentUser, setCurrentUser] = useState({});
   const [postsUser, setPostsUser] = useState([]);
-
+  const [refreshing, setRefreshing] = useState(false); // Add refreshing state
   const isMe = auth === "me";
-
   const router = useRouter();
+
   const handleLogout = async () => {
-    Alert.alert("Sign out", "Are your sure want to log out?", [
+    Alert.alert("Sign out", "Are you sure you want to log out?", [
       {
         text: "Cancel",
         onPress: () => console.log("Cancel modal"),
@@ -39,7 +40,11 @@ const Profile = () => {
       },
       {
         text: "Logout",
-        onPress: async () => await logout(),
+        onPress: async () => {
+          router.dismissAll();
+          router.replace("Login");
+          await logout();
+        },
       },
     ]);
   };
@@ -51,17 +56,33 @@ const Profile = () => {
       if (data.user) {
         const postData = await getPostOfUser(data.user._id);
         if (postData.posts) {
-          setPostsUser(postData.posts);
+          const sortedPosts = postData.posts.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          );
+          setPostsUser(sortedPosts);
         }
       }
-    } catch (error) {}
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const fetchNormalUser = async () => {
     try {
-      const data = await getUser("66d6e378d0bda1311f6c320c");
+      const data = await getUser(userId);
       setCurrentUser(data.user);
-    } catch (error) {}
+      if (data.user) {
+        const postData = await getPostOfUser(data.user._id);
+        if (postData.posts) {
+          const sortedPosts = postData.posts.sort(
+            (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+          );
+          setPostsUser(sortedPosts);
+        }
+      }
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   useEffect(() => {
@@ -70,30 +91,45 @@ const Profile = () => {
     } else {
       fetchNormalUser();
     }
-  }, []);
+  }, [userId]);
 
-  useFocusEffect(
-    useCallback(() => {
-      if (isMe) {
-        fetchAuthUser();
-      } else {
-        fetchNormalUser();
-      }
-    }, [])
-  );
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    if (isMe) {
+      fetchAuthUser().finally(() => setRefreshing(false));
+    } else {
+      fetchNormalUser().finally(() => setRefreshing(false));
+    }
+  }, [isMe, userId]);
 
   return (
     <ScreenWrapper>
-      <VStack>
+      <VStack style={{ paddingBottom: 10, flex: 1 }}>
         <Header title={"Profile"} mb={10} />
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Icon name={"logout"} color={themes.colors.rose} />
-        </TouchableOpacity>
-        <ScrollView>
+        {isMe && (
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Icon name={"logout"} color={themes.colors.rose} />
+          </TouchableOpacity>
+        )}
+        <ScrollView
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
           <UserHeader isMe={isMe} user={currentUser} router={router} />
-          {authUser && postsUser.length > 0 ? (
+          {postsUser.length > 0 ? (
             postsUser.map((p) => (
-              <Post key={p._id} post={p} currentUser={currentUser} />
+              <Pressable
+                key={p._id}
+                onPress={() =>
+                  router.push({
+                    pathname: "main/DetailPost",
+                    params: { postId: p._id },
+                  })
+                }
+              >
+                <Post key={p._id} post={p} currentUser={currentUser} />
+              </Pressable>
             ))
           ) : (
             <Text>No posts available.</Text>
@@ -117,14 +153,16 @@ const UserHeader = ({ user, isMe, router }) => {
               <Text>{`@${user.userName}`}</Text>
               <View>
                 <Text>{user.bio}</Text>
-                <Pressable onPress={() => console.log("click see followers")}>
+                <TouchableOpacity
+                  onPress={() => console.log("click see followers")}
+                >
                   <View style={styles.followers}>
                     <Icon size={20} name={"followers"} />
                     <Text style={{ color: themes.colors.dark }}>
                       999 followers
                     </Text>
                   </View>
-                </Pressable>
+                </TouchableOpacity>
               </View>
             </View>
             <View style={styles.avatarContainer}>
@@ -143,19 +181,28 @@ const UserHeader = ({ user, isMe, router }) => {
               )}
             </View>
           </View>
-
-          <View style={[styles.buttonGroup, { marginTop: 10 }]}>
-            <ButtonCommon onPress={() => console.log("click")} title="Follow" />
-            <ButtonCommon
-              onPress={() => console.log("click 2")}
-              title="Send Message"
-            />
-          </View>
+          {!isMe && (
+            <View style={[styles.buttonGroup, { marginTop: 10 }]}>
+              <ButtonCommon
+                onPress={() => console.log("click")}
+                title="Follow"
+              />
+              <ButtonCommon
+                onPress={() =>
+                  router.push({
+                    pathname: "main/chat/ChatRoom",
+                    params: { friendId: user._id },
+                  })
+                }
+                title="Send Message"
+              />
+            </View>
+          )}
         </View>
       </View>
       <View style={{ marginTop: 10, paddingHorizontal: 20 }}>
         <Text bold fontSize={"xl"}>
-          Posts
+          {isMe && `Your `}Posts
         </Text>
       </View>
     </View>
@@ -169,13 +216,6 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     marginTop: 20,
-  },
-  headerContainer: {
-    marginBottom: 20,
-  },
-  headerShape: {
-    width: wp(100),
-    height: hp(20),
   },
   wrapperHeadProfile: {
     display: "flex",
@@ -215,20 +255,6 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 7,
   },
-  userName: {
-    fontWeight: "700",
-    color: themes.colors.textDark,
-  },
-  info: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  infoText: {
-    fontSize: hp(1.6),
-    fontWeight: "500",
-    color: themes.colors.textLight,
-  },
   logoutButton: {
     position: "absolute",
     top: 7,
@@ -236,14 +262,5 @@ const styles = StyleSheet.create({
     padding: 5,
     borderRadius: themes.radius.sm,
     backgroundColor: "#fee2e2",
-  },
-  listStyle: {
-    paddingHorizontal: wp(4),
-    paddingBottom: 30,
-  },
-  noPost: {
-    fontSize: hp(20),
-    textAlign: "center",
-    color: themes.colors.text,
   },
 });
