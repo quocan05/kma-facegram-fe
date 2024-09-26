@@ -1,13 +1,13 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { ScrollView, Text, VStack } from "native-base";
+import { HStack, ScrollView, Text, VStack } from "native-base";
 import React, { useCallback, useEffect, useState } from "react";
 import {
   Alert,
   Pressable,
+  RefreshControl,
   StyleSheet,
   TouchableOpacity,
   View,
-  RefreshControl, // Import RefreshControl
 } from "react-native";
 import Icon from "../../assets/icons";
 import Avatar from "../../components/avatar/Avatar";
@@ -17,17 +17,19 @@ import Post from "../../components/post/Post";
 import ScreenWrapper from "../../components/screen/ScreenWrapper";
 import { themes } from "../../constants/theme";
 import { useAuth } from "../../contexts/AuthContext";
-import { hp, wp } from "../../helpers/common";
+import { hp } from "../../helpers/common";
 import { getMe } from "../../services/AuthUser";
 import { getPostOfUser } from "../../services/PostService";
-import { getUser } from "../../services/UserService";
+import { followUser, getUser, unfollowUser } from "../../services/UserService";
 
 const Profile = () => {
   const { auth, userId } = useLocalSearchParams();
-  const { authUser, logout } = useAuth();
+  const { logout } = useAuth();
   const [currentUser, setCurrentUser] = useState({});
   const [postsUser, setPostsUser] = useState([]);
-  const [refreshing, setRefreshing] = useState(false); // Add refreshing state
+  const [refreshing, setRefreshing] = useState(false);
+  const [followers, setFollowers] = useState(0);
+  const [followings, setFollowings] = useState(0);
   const isMe = auth === "me";
   const router = useRouter();
 
@@ -52,10 +54,12 @@ const Profile = () => {
   const fetchAuthUser = async () => {
     try {
       const data = await getMe();
-      setCurrentUser(data.user);
-      if (data.user) {
+      if (data?.user) {
+        setCurrentUser(data.user);
+        setFollowers(data.followers || 0);
+        setFollowings(data.followings || 0);
         const postData = await getPostOfUser(data.user._id);
-        if (postData.posts) {
+        if (postData?.posts) {
           const sortedPosts = postData.posts.sort(
             (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
           );
@@ -70,10 +74,12 @@ const Profile = () => {
   const fetchNormalUser = async () => {
     try {
       const data = await getUser(userId);
-      setCurrentUser(data.user);
-      if (data.user) {
+      if (data?.user) {
+        setCurrentUser(data.user);
+        setFollowers(data.followers || 0);
+        setFollowings(data.followings || 0);
         const postData = await getPostOfUser(data.user._id);
-        if (postData.posts) {
+        if (postData?.posts) {
           const sortedPosts = postData.posts.sort(
             (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
           );
@@ -81,7 +87,7 @@ const Profile = () => {
         }
       }
     } catch (error) {
-      console.log(error);
+      console.log("err when set user", error);
     }
   };
 
@@ -116,7 +122,13 @@ const Profile = () => {
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
           }
         >
-          <UserHeader isMe={isMe} user={currentUser} router={router} />
+          <UserHeader
+            isMe={isMe}
+            user={currentUser}
+            router={router}
+            followers={followers}
+            followings={followings}
+          />
           {postsUser.length > 0 ? (
             postsUser.map((p) => (
               <Pressable
@@ -140,7 +152,41 @@ const Profile = () => {
   );
 };
 
-const UserHeader = ({ user, isMe, router }) => {
+const UserHeader = ({ user, isMe, router, followers, followings }) => {
+  const { authUser, reloadFollow, authFollowings } = useAuth();
+  const [isFollowed, setIsFollowed] = useState(false);
+
+  const handleFollow = async () => {
+    try {
+      if (isFollowed) {
+        // Call the unfollow API
+        await unfollowUser(user._id);
+        setIsFollowed(false);
+      } else {
+        // Call the follow API
+        await followUser(user._id);
+        setIsFollowed(true);
+      }
+    } catch (error) {
+      console.log("got error when follow", error);
+    } finally {
+      reloadFollow(authUser._id);
+    }
+  };
+
+  const checkFollowed = async () => {
+    const check = authFollowings.some((f) => f.author._id === user._id);
+    setIsFollowed(check);
+  };
+
+  useEffect(() => {
+    reloadFollow(authUser._id);
+  }, []);
+
+  useEffect(() => {
+    checkFollowed();
+  }, [authFollowings]);
+
   return (
     <View style={{ flex: 1 }}>
       <View style={styles.container}>
@@ -153,16 +199,26 @@ const UserHeader = ({ user, isMe, router }) => {
               <Text>{`@${user.userName}`}</Text>
               <View>
                 <Text>{user.bio}</Text>
-                <TouchableOpacity
-                  onPress={() => console.log("click see followers")}
-                >
-                  <View style={styles.followers}>
-                    <Icon size={20} name={"followers"} />
-                    <Text style={{ color: themes.colors.dark }}>
-                      999 followers
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+                <HStack space={4}>
+                  <TouchableOpacity
+                    onPress={() => console.log("click see followers")}
+                  >
+                    <View style={styles.followers}>
+                      <Icon size={20} name={"followers"} />
+                      <Text style={{ color: themes.colors.dark }}>
+                        {`${followers ?? 0} followers`}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => reloadFollow(authUser._id)}>
+                    <View style={styles.followers}>
+                      <Icon size={20} name={"followers"} />
+                      <Text style={{ color: themes.colors.dark }}>
+                        {`${followings ?? 0} followings`}
+                      </Text>
+                    </View>
+                  </TouchableOpacity>
+                </HStack>
               </View>
             </View>
             <View style={styles.avatarContainer}>
@@ -184,8 +240,13 @@ const UserHeader = ({ user, isMe, router }) => {
           {!isMe && (
             <View style={[styles.buttonGroup, { marginTop: 10 }]}>
               <ButtonCommon
-                onPress={() => console.log("click")}
-                title="Follow"
+                buttonStyle={{
+                  backgroundColor: isFollowed
+                    ? themes.colors.gray
+                    : themes.colors.primary,
+                }}
+                onPress={handleFollow}
+                title={isFollowed ? "Unfollow" : "Follow"}
               />
               <ButtonCommon
                 onPress={() =>

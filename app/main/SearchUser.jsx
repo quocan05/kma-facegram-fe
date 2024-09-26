@@ -75,9 +75,9 @@ const SearchUser = () => {
               <Text fontSize={12}>99 followers</Text>
             </VStack>
           </HStack>
-          <Button size="sm" variant="outline">
+          {/* <Button size="sm" variant="outline">
             Follow
-          </Button>
+          </Button> */}
         </HStack>
       </Pressable>
 

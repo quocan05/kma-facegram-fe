@@ -24,12 +24,17 @@ export const getListFollower = async (userId) => {
   return response.data;
 };
 
-export const followUSer = async (userId) => {
+export const getListFollowing = async (userId) => {
+  const response = await axiosInstance.get(`/users/${userId}/followings`);
+  return response.data;
+};
+
+export const followUser = async (userId) => {
   const response = await axiosInstance.post(`/users/${userId}/follow`);
   return response.data;
 };
 
-export const unfollowUSer = async (userId) => {
+export const unfollowUser = async (userId) => {
   const response = await axiosInstance.post(`/users/${userId}/unfollow`);
   return response.data;
 };

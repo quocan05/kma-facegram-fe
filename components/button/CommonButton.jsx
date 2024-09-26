@@ -1,4 +1,11 @@
-import { View, Text, Pressable, StyleSheet } from "react-native";
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  Touchable,
+  TouchableOpacity,
+} from "react-native";
 import React from "react";
 import { themes } from "../../constants/theme";
 import { hp, wp } from "../../helpers/common";
@@ -27,12 +34,12 @@ const ButtonCommon = ({
     );
   }
   return (
-    <Pressable
+    <TouchableOpacity
       onPress={onPress}
       style={[styles.button, buttonStyle, hasShadow && shadowStyle]}
     >
       <Text style={[styles.text, textStyle]}>{title}</Text>
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 

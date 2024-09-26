@@ -4,9 +4,6 @@ import { AuthProvider } from "../contexts/AuthContext";
 import ScreenWrapper from "../components/screen/ScreenWrapper";
 
 const _layout = () => {
-  useEffect(() => {
-    console.log("render layout");
-  }, []);
   return (
     <AuthProvider>
       <ScreenWrapper>
