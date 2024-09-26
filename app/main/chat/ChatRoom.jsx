@@ -43,7 +43,7 @@ const ChatRoom = () => {
     } catch (error) {
       console.error(error);
     } finally {
-      console.log(conversation.secondUser);
+      console.log("conv>>>>>>", conversation.id);
     }
   };
 

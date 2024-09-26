@@ -1,43 +1,67 @@
-import { StyleSheet, Text, View, Image, FlatList } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Image,
+  FlatList,
+  TouchableOpacity,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import ScreenWrapper from "../../../components/screen/ScreenWrapper";
 import Header from "../../../components/header/Header";
 import { VStack } from "native-base";
 import { getConversations } from "../../../services/CommunicationService";
-
-// Sample conversation data
-const conversations = [
-  {
-    _id: "66eaf1b7e4a06a90c0914fd6",
-    firstUser: {
-      _id: "66d803e0162be4e90d92d91a",
-      displayName: "Johnnyabc Khac",
-      avatar:
-        "https://tanhuet.s3.ap-southeast-1.amazonaws.com/66e95392a3eef545608e6823",
-    },
-    secondUser: {
-      _id: "66da7aaf162be4e90d92df49",
-      displayName: "david bip 12345",
-      avatar:
-        "https://tanhuet.s3.ap-southeast-1.amazonaws.com/66e48f3b2a256536642df933",
-    },
-    __v: 0,
-  },
-];
+import { useRouter } from "expo-router";
+import Avatar from "../../../components/avatar/Avatar";
+import { themes } from "../../../constants/theme";
+import { useAuth } from "../../../contexts/AuthContext";
 
 const ConversationItem = ({ conversation }) => {
-  const { firstUser, secondUser } = conversation;
+  const { authUser } = useAuth(); // Moved authUser above for clarity
+  const { firstUser, secondUser, lastMsg } = conversation;
+  const [friend, setFriend] = useState(null);
+  const router = useRouter();
+
+  useEffect(() => {
+    // Check if authUser, firstUser, and secondUser are defined before setting friend
+    if (authUser && firstUser && secondUser) {
+      setFriend(authUser._id === firstUser._id ? secondUser : firstUser);
+    }
+  }, [authUser, firstUser, secondUser]);
+
+  if (!authUser || !firstUser || !secondUser) {
+    // Return null or a loading indicator if necessary
+    return null;
+  }
 
   return (
-    <View style={styles.conversationItem}>
-      <Image source={{ uri: firstUser.avatar }} style={styles.avatar} />
-      <View style={styles.textContainer}>
-        <Text style={styles.userName}>{secondUser.displayName}</Text>
-        <Text style={styles.lastMsg}>
-          {"the last message here.............................."}
-        </Text>
+    <TouchableOpacity
+      onPress={() =>
+        router.push({
+          pathname: "main/chat/ChatRoom",
+          params: {
+            friendId:
+              authUser._id === firstUser._id ? secondUser._id : firstUser._id,
+          },
+        })
+      }
+    >
+      <View style={styles.conversationItem}>
+        <Avatar
+          uri={friend?.avatar ? friend.avatar : ""}
+          size={60}
+          rounded={themes.radius.xxl}
+        />
+        <View style={styles.textContainer}>
+          <Text style={styles.userName}>{friend?.displayName}</Text>
+          <Text style={styles.lastMsg}>
+            {`${lastMsg?.sender === authUser._id ? "You: " : "Your friend: "}${
+              lastMsg?.content || ""
+            }`}
+          </Text>
+        </View>
       </View>
-    </View>
+    </TouchableOpacity>
   );
 };
 
@@ -47,7 +71,7 @@ const ListInboxes = () => {
     try {
       const data = await getConversations();
       if (data) {
-        console.log(data.conversations);
+        console.log(data);
         setConversations(data.conversations);
       }
     } catch (error) {
@@ -81,6 +105,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderBottomWidth: 1,
     borderBottomColor: "#ccc",
+    gap: 10,
   },
   avatar: {
     width: 50,
