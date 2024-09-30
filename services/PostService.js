@@ -20,6 +20,11 @@ export const deletePost = async (postId) => {
   return response.data;
 };
 
+export const editPost = async (postId, param) => {
+  const response = await axiosInstance.put(`/posts/${postId}`, param);
+  return response.data;
+};
+
 export const likePost = async (param) => {
   const response = await axiosInstance.post("/react/", param);
   return response.data;

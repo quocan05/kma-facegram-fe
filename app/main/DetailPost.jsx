@@ -1,5 +1,10 @@
 import { Image } from "expo-image";
-import { useLocalSearchParams } from "expo-router";
+import {
+  router,
+  useFocusEffect,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
 import {
   AlertDialog,
   Box,
@@ -13,7 +18,7 @@ import {
   useToast,
   VStack,
 } from "native-base";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Alert,
   Keyboard,
@@ -53,6 +58,8 @@ const DetailPost = () => {
 
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+
+  const router = useRouter();
 
   const fetchPost = async () => {
     try {
@@ -192,9 +199,11 @@ const DetailPost = () => {
     }
   };
 
-  useEffect(() => {
-    fetchPost();
-  }, [postId]);
+  useFocusEffect(
+    useCallback(() => {
+      fetchPost();
+    }, [postId])
+  );
 
   const postContentExceedsLimit = post.content?.length > 100; // Check if content exceeds 100 characters
 
@@ -235,7 +244,14 @@ const DetailPost = () => {
             >
               {post.author && post.author._id === authUser._id && (
                 <>
-                  <Menu.Item onPress={() => console.log("Delete Post")}>
+                  <Menu.Item
+                    onPress={() =>
+                      router.push({
+                        pathname: "main/EditPost",
+                        params: { postId: post._id },
+                      })
+                    }
+                  >
                     Update Post
                   </Menu.Item>
                   <Menu.Item onPress={() => setIsOpen(true)}>
